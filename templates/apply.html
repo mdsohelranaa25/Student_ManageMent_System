@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Apply as {{ role }}{% endblock %}
+
+{% block content %}
+  <div class="apply-wrap my-4">
+    <div class="apply-panel">
+      <div class="eyebrow">Membership Application</div>
+      <h2>Apply as {{ role }}</h2>
+      <p>Fill in your details and submit. Here's what happens next:</p>
+      <ol class="apply-steps">
+        <li>Your application goes to the department admin.</li>
+        <li>The admin reviews and approves it.</li>
+        <li>A login ID and password are emailed to your Gmail automatically.</li>
+        <li>You log in and can change your password anytime.</li>
+      </ol>
+    </div>
+
+    <div class="apply-form-side">
+      <form method="post">
+        {% csrf_token %}
+
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}
+              <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+            {% endif %}
+          </div>
+        {% endfor %}
+
+        <button type="submit" class="btn btn-primary w-100 mt-2">Submit Application</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}

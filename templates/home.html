@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+
+{% block content %}
+  <div class="hero text-center my-4">
+    <div class="eyebrow">Department Portal</div>
+    <h1 class="mb-3">Student Management System</h1>
+    <p class="mb-4">
+      A single place for attendance, class routine, results, and academic records —
+      for students, teachers, and department administration.
+    </p>
+
+    <a href="/accounts/login/" class="btn btn-primary btn-lg me-3">Login</a>
+
+    <div class="dropdown d-inline-block">
+      <button class="btn btn-outline-light btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+        Apply
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end apply-dropdown">
+        <li><a class="dropdown-item" href="/accounts/apply/student/">Student</a></li>
+        <li><a class="dropdown-item" href="/accounts/apply/teacher/">Teacher</a></li>
+      </ul>
+    </div>
+  </div>
+{% endblock %}
