@@ -70,6 +70,9 @@ class ProfilePictureForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ["profile_picture"]
+        widgets = {
+            "profile_picture": forms.FileInput(attrs={"accept": "image/*"}),
+        }
 
 
         

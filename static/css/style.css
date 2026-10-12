@@ -487,99 +487,193 @@ h1, h2, h3, h4, .navbar-brand {
 /* ---------- Dashboard layout ---------- */
 .dash-wrap {
   display: flex;
-  gap: 24px;
+  gap: 28px;
   align-items: flex-start;
 }
 
 .dash-sidebar {
-  flex: 0 0 220px;
-  background-color: var(--forest-deep);
-  border-radius: 6px;
-  padding: 18px 0;
+  flex: 0 0 240px;
+  background: linear-gradient(180deg, var(--forest-deep), #0a1d13);
+  border-radius: 10px;
+  padding-bottom: 14px;
+  box-shadow: 0 8px 30px rgba(15, 38, 25, 0.18);
   position: sticky;
   top: 20px;
+  overflow: hidden;
 }
 
-.dash-sidebar-title {
-  color: var(--rust);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 0 20px 14px 20px;
-}
-
-.dash-link {
-  display: block;
-  padding: 11px 20px;
-  color: #c3cabb;
-  text-decoration: none;
-  font-size: 0.92rem;
-  border-left: 3px solid transparent;
-}
-
-.dash-link:hover {
-  background-color: rgba(255,255,255,0.05);
-  color: var(--ivory);
-}
-
-.dash-link.active {
-  background-color: rgba(255,255,255,0.08);
-  color: var(--ivory);
-  border-left: 3px solid var(--rust);
-  font-weight: 600;
-}
-
-.dash-content {
-  flex: 1;
-  min-width: 0;
-}
-
-@media (max-width: 767px) {
-  .dash-wrap {
-    flex-direction: column;
-  }
-  .dash-sidebar {
-    flex: none;
-    width: 100%;
-    position: static;
-  }
-}
-
-/* ---------- Student profile ---------- */
-.profile-grid {
-  display: flex;
-  gap: 24px;
-  align-items: flex-start;
-}
-
-.profile-pic-card {
-  flex: 0 0 180px;
+.dash-user-card {
+  padding: 28px 20px 20px 20px;
   text-align: center;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 10px;
 }
 
-.profile-pic {
-  width: 150px;
-  height: 150px;
+.dash-user-avatar {
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  border: 3px solid var(--forest-deep);
+  border: 2px solid var(--rust);
+  margin: 0 auto 10px auto;
+  display: block;
 }
 
-.profile-pic-placeholder {
+.dash-user-avatar-placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: var(--forest-deep);
+  background: rgba(255,255,255,0.08);
   color: var(--ivory);
-  font-size: 48px;
   font-family: 'Source Serif 4', serif;
+  font-size: 24px;
   font-weight: 700;
 }
 
+.dash-user-name {
+  color: var(--ivory);
+  font-family: 'Source Serif 4', serif;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.dash-user-role {
+  color: var(--rust);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+.dash-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 22px;
+  color: #aab3a2;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  position: relative;
+  transition: all 0.15s ease;
+}
+
+.dash-link svg { flex-shrink: 0; opacity: 0.75; }
+.dash-link:hover { color: var(--ivory); background: rgba(255,255,255,0.04); }
+.dash-link.active { color: var(--ivory); background: rgba(255,255,255,0.07); }
+.dash-link.active svg { opacity: 1; color: var(--rust); }
+.dash-link.active::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--rust);
+}
+
+.dash-content { flex: 1; min-width: 0; }
+
+@media (max-width: 767px) {
+  .dash-wrap { flex-direction: column; }
+  .dash-sidebar { flex: none; width: 100%; position: static; }
+}
+
+/* ---------- Profile hero ---------- */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  background: linear-gradient(135deg, var(--forest) 0%, var(--forest-deep) 100%);
+  border-radius: 10px;
+  padding: 32px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.profile-hero::after {
+  content: "";
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(201,129,80,0.25), transparent 70%);
+}
+
+.profile-avatar-wrap { position: relative; flex-shrink: 0; z-index: 1; }
+
+.profile-avatar {
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid var(--ivory);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+  display: block;
+}
+
+.profile-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.12);
+  color: var(--ivory);
+  font-family: 'Source Serif 4', serif;
+  font-weight: 700;
+  font-size: 42px;
+}
+
+.avatar-edit-btn {
+  position: absolute;
+  bottom: 4px; right: 4px;
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--rust);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid var(--ivory);
+  color: #fff;
+  transition: background 0.15s ease;
+}
+
+.avatar-edit-btn:hover { background: var(--rust-deep); }
+#id_profile_picture { display: none; }
+
+.profile-hero-info { position: relative; z-index: 1; }
+.profile-hero-info h2 { color: var(--ivory); margin-bottom: 10px; font-size: 1.9rem; }
+
+.profile-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  display: inline-block;
+  background: rgba(255,255,255,0.14);
+  color: var(--ivory);
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 5px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+}
+.chip-rust { background: var(--rust); }
+
+/* ---------- Info card ---------- */
+.info-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 4px 28px;
+  box-shadow: 0 2px 16px rgba(15, 38, 25, 0.05);
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--border);
+}
+.info-row:last-child { border-bottom: none; }
+.info-label { color: var(--muted); font-size: 0.85rem; font-weight: 500; }
+.info-value { color: var(--ink); font-size: 0.92rem; font-weight: 600; }
+
 @media (max-width: 575px) {
-  .profile-grid {
-    flex-direction: column;
-    align-items: center;
-  }
+  .profile-hero { flex-direction: column; text-align: center; }
+  .info-row { flex-direction: column; gap: 4px; }
 }
