@@ -25,6 +25,8 @@ class User(AbstractUser):
         on_delete=models.SET_NULL,
         related_name="students",
     )
+    roll = models.PositiveIntegerField(null=True, blank=True, help_text="Roll number within the batch")
+    profile_picture = models.ImageField(upload_to="profile_pics/", null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # accounts made with `createsuperuser` are always admins

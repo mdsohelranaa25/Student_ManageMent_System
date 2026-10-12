@@ -16,7 +16,10 @@
       <div>
         {% if user.is_authenticated %}
           <span class="text-light me-3">{{ user.username }} ({{ user.role }})</span>
-          <a href="/accounts/logout/" class="btn btn-outline-light btn-sm">Logout</a>
+          <form method="post" action="/accounts/logout/" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+          </form>
         {% else %}
           <a href="/accounts/login/" class="btn btn-outline-light btn-sm me-2">Login</a>
           <a href="/accounts/apply/" class="btn btn-light btn-sm">Apply</a>
