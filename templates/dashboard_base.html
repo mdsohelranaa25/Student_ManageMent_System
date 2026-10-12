@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="dash-wrap">
+    <aside class="dash-sidebar">
+      <div class="dash-sidebar-title">Student</div>
+      <nav>
+        <a href="/student-dashboard/" class="dash-link {% if active == 'profile' %}active{% endif %}">Profile</a>
+        <a href="/student-dashboard/routine/" class="dash-link {% if active == 'routine' %}active{% endif %}">Routine</a>
+        <a href="/student-dashboard/attendance/" class="dash-link {% if active == 'attendance' %}active{% endif %}">Attendance</a>
+        <a href="/student-dashboard/results/" class="dash-link {% if active == 'results' %}active{% endif %}">Results</a>
+        <a href="/student-dashboard/change-password/" class="dash-link {% if active == 'password' %}active{% endif %}">Change Password</a>
+      </nav>
+    </aside>
+    <main class="dash-content">
+      {% block dash_content %}{% endblock %}
+    </main>
+  </div>
+{% endblock %}

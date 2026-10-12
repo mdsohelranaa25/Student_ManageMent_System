@@ -484,3 +484,102 @@ h1, h2, h3, h4, .navbar-brand {
     gap: 14px;
   }
 }
+/* ---------- Dashboard layout ---------- */
+.dash-wrap {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.dash-sidebar {
+  flex: 0 0 220px;
+  background-color: var(--forest-deep);
+  border-radius: 6px;
+  padding: 18px 0;
+  position: sticky;
+  top: 20px;
+}
+
+.dash-sidebar-title {
+  color: var(--rust);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0 20px 14px 20px;
+}
+
+.dash-link {
+  display: block;
+  padding: 11px 20px;
+  color: #c3cabb;
+  text-decoration: none;
+  font-size: 0.92rem;
+  border-left: 3px solid transparent;
+}
+
+.dash-link:hover {
+  background-color: rgba(255,255,255,0.05);
+  color: var(--ivory);
+}
+
+.dash-link.active {
+  background-color: rgba(255,255,255,0.08);
+  color: var(--ivory);
+  border-left: 3px solid var(--rust);
+  font-weight: 600;
+}
+
+.dash-content {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .dash-wrap {
+    flex-direction: column;
+  }
+  .dash-sidebar {
+    flex: none;
+    width: 100%;
+    position: static;
+  }
+}
+
+/* ---------- Student profile ---------- */
+.profile-grid {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.profile-pic-card {
+  flex: 0 0 180px;
+  text-align: center;
+}
+
+.profile-pic {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--forest-deep);
+}
+
+.profile-pic-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--forest-deep);
+  color: var(--ivory);
+  font-size: 48px;
+  font-family: 'Source Serif 4', serif;
+  font-weight: 700;
+}
+
+@media (max-width: 575px) {
+  .profile-grid {
+    flex-direction: column;
+    align-items: center;
+  }
+}

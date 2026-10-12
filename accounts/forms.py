@@ -2,6 +2,7 @@ from django import forms
 
 from .models import Application, User
 
+
 class ApplicationForm(forms.ModelForm):
     class Meta:
         model = Application
@@ -29,12 +30,13 @@ class ApplicationForm(forms.ModelForm):
         if not phone.startswith("01"):
             raise forms.ValidationError("Phone number must start with 01.")
         return phone
-    
+
     def clean_email(self):
         email = self.cleaned_data["email"].strip().lower()
         if User.objects.filter(email=email).exists():
             raise forms.ValidationError("An account already exists with this email.")
         return email
+
 
 class ForgotPasswordForm(forms.Form):
     identifier = forms.CharField(
@@ -62,3 +64,12 @@ class SetNewPasswordForm(forms.Form):
         if p1 and len(p1) < 8:
             raise forms.ValidationError("Password must be at least 8 characters.")
         return cleaned
+
+
+class ProfilePictureForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["profile_picture"]
+
+
+        

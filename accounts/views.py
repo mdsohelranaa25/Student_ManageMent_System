@@ -9,7 +9,7 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
-from .forms import ApplicationForm, ForgotPasswordForm, SetNewPasswordForm
+from .forms import ApplicationForm, ForgotPasswordForm, ProfilePictureForm, SetNewPasswordForm
 from .models import Application, PasswordResetCode, User
 from .utils import generate_password, generate_reset_code, generate_student_username, generate_teacher_username
 
@@ -210,3 +210,20 @@ def set_new_password(request):
         form = SetNewPasswordForm()
 
     return render(request, "set_new_password.html", {"form": form})
+def student_only(user):
+    return user.is_authenticated and user.role == "student"
+
+
+@login_required
+@user_passes_test(student_only)
+def student_profile(request):
+    if request.method == "POST":
+        form = ProfilePictureForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile picture updated.")
+            return redirect("student_dashboard")
+    else:
+        form = ProfilePictureForm(instance=request.user)
+
+    return render(request, "student_profile.html", {"form": form, "active": "profile"})
