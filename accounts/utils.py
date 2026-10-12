@@ -56,3 +56,5 @@ def generate_teacher_username(full_name):
 def generate_password(length=10):
     alphabet = string.ascii_letters + string.digits
     return "".join(secrets.choice(alphabet) for _ in range(length))
+def generate_reset_code():
+    return f"{secrets.randbelow(1000000):06d}"

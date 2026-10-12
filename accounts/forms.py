@@ -1,7 +1,6 @@
 from django import forms
 
-from .models import Application
-
+from .models import Application, User
 
 class ApplicationForm(forms.ModelForm):
     class Meta:
@@ -17,7 +16,6 @@ class ApplicationForm(forms.ModelForm):
     def __init__(self, *args, role=None, **kwargs):
         super().__init__(*args, **kwargs)
         if role == "teacher":
-            # Teachers don't have a batch, so remove that field entirely
             self.fields.pop("batch")
         else:
             self.fields["batch"].required = True
@@ -31,3 +29,36 @@ class ApplicationForm(forms.ModelForm):
         if not phone.startswith("01"):
             raise forms.ValidationError("Phone number must start with 01.")
         return phone
+    
+    def clean_email(self):
+        email = self.cleaned_data["email"].strip().lower()
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("An account already exists with this email.")
+        return email
+
+class ForgotPasswordForm(forms.Form):
+    identifier = forms.CharField(
+        label="Username or Email",
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Your username or Gmail"}),
+    )
+
+
+class SetNewPasswordForm(forms.Form):
+    new_password = forms.CharField(
+        label="New Password",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "At least 8 characters"}),
+    )
+    confirm_password = forms.CharField(
+        label="Confirm Password",
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Retype password"}),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        p1 = cleaned.get("new_password")
+        p2 = cleaned.get("confirm_password")
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError("Passwords do not match.")
+        if p1 and len(p1) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters.")
+        return cleaned

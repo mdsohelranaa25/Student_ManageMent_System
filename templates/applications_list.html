@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Applications{% endblock %}
+
+{% block content %}
+  <div class="apps-heading">
+    <div class="eyebrow">Admin</div>
+    <h2 class="mb-4">Pending Applications</h2>
+  </div>
+
+  {% if applications %}
+    <div class="apps-list">
+      {% for app in applications %}
+        <div class="app-row">
+          <div class="app-info">
+            <span class="app-role-badge app-role-{{ app.role }}">{{ app.get_role_display }}</span>
+            <h4 class="mb-1">{{ app.name }}</h4>
+            <p class="mb-0 text-muted small">
+              {{ app.email }} &nbsp;&middot;&nbsp; {{ app.phone }}
+              {% if app.batch %} &nbsp;&middot;&nbsp; Batch {{ app.batch }}{% endif %}
+            </p>
+            <p class="mb-0 text-muted small">Applied {{ app.created_at|date:"d M Y, h:i A" }}</p>
+          </div>
+          <div class="app-actions">
+            <form method="post" action="{% url 'approve_application' app.id %}" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+            </form>
+            <form method="post" action="{% url 'reject_application' app.id %}" class="d-inline ms-2">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+            </form>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No pending applications right now.</p>
+  {% endif %}
+{% endblock %}

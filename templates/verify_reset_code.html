@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Verify Code{% endblock %}
+
+{% block content %}
+  <div class="apply-wrap my-4">
+    <div class="apply-panel">
+      <div class="eyebrow">Account Recovery</div>
+      <h2>Enter your code</h2>
+            <p>We sent a 6-digit code to your Gmail. It expires in 2 minutes.</p>
+      <ol class="apply-steps">
+        <li>Check your inbox (or the terminal, for now).</li>
+        <li>Enter the 6-digit code below.</li>
+        <li>You'll then be able to set a new password.</li>
+      </ol>
+    </div>
+
+    <div class="apply-form-side">
+      <form method="post">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <label class="form-label">6-digit code</label>
+          <input type="text" name="code" class="form-control" maxlength="6" placeholder="000000" required>
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-2">Verify Code</button>
+      </form>
+    </div>
+  </div>
+{% endblock %}
