@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Create Exam Routine{% endblock %}
+
+{% block content %}
+  <div class="routine-heading">
+    <div class="eyebrow">Admin</div>
+    <h2 class="mb-4">Schedule an Exam</h2>
+  </div>
+
+  <div class="routine-card">
+    <form method="post" id="exam-form">
+      {% csrf_token %}
+      <div class="routine-grid">
+        <div class="mb-3">
+          <label class="form-label">Semester</label>
+          <select id="id_semester" class="form-select" required>
+            <option value="">Select semester</option>
+            {% for s in semesters %}
+              <option value="{{ s }}">Semester {{ s }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Course</label>
+          <select name="course" id="id_course" class="form-select" required disabled>
+            <option value="">Select semester first</option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Date</label>
+          <input type="date" name="date" id="id_date" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Time Slot</label>
+          <select name="time_slot" id="id_time_slot" class="form-select" required>
+            <option value="">Select time slot</option>
+            {% for ts in time_slots %}
+              <option value="{{ ts.id }}">{{ ts.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <label class="form-label">Room</label>
+      <div class="room-grid" id="room-grid">
+        <p class="text-muted small">Select date and time slot to see room availability.</p>
+      </div>
+      <input type="hidden" name="room" id="id_room">
+
+      <button type="submit" class="btn btn-primary mt-3" id="submit-btn" disabled>Add Exam</button>
+    </form>
+  </div>
+
+    <h4 class="mt-5 mb-3">Upcoming Exams</h4>
+  <div class="entry-list">
+    {% for e in existing %}
+      <div class="entry-row exam-row">
+        <span class="entry-date">{{ e.date }}</span>
+        <span class="entry-time">{{ e.time_slot }}</span>
+        <span class="entry-course">{{ e.course.code }} - {{ e.course.title }}</span>
+        <span class="entry-room">{{ e.room }}</span>
+      </div>
+    {% empty %}
+      <p class="text-muted">No exams scheduled yet.</p>
+    {% endfor %}
+  </div>
+
+  {{ courses_by_semester|json_script:"courses-data" }}
+
+  <script>
+    const coursesBySemester = JSON.parse(document.getElementById('courses-data').textContent);
+
+    const semesterSelect = document.getElementById('id_semester');
+    const courseSelect = document.getElementById('id_course');
+    const dateInput = document.getElementById('id_date');
+    const slotSelect = document.getElementById('id_time_slot');
+    const roomGrid = document.getElementById('room-grid');
+    const roomInput = document.getElementById('id_room');
+    const submitBtn = document.getElementById('submit-btn');
+
+    semesterSelect.addEventListener('change', function () {
+      const sem = this.value;
+      courseSelect.innerHTML = '<option value="">Select course</option>';
+      if (!sem) {
+        courseSelect.disabled = true;
+        return;
+      }
+      (coursesBySemester[sem] || []).forEach(c => {
+        const opt = document.createElement('option');
+        opt.value = c.id;
+        opt.textContent = c.code + ' - ' + c.title;
+        courseSelect.appendChild(opt);
+      });
+      courseSelect.disabled = false;
+    });
+
+    function fetchAvailability() {
+      const date = dateInput.value;
+      const slot = slotSelect.value;
+      roomInput.value = '';
+      submitBtn.disabled = true;
+
+      if (!date || !slot) {
+        roomGrid.innerHTML = '<p class="text-muted small">Select date and time slot to see room availability.</p>';
+        return;
+      }
+
+      fetch(`/academics/exam-routine/availability/?date=${date}&time_slot=${slot}`)
+        .then(res => res.json())
+        .then(data => {
+          roomGrid.innerHTML = '';
+          data.rooms.forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'room-tile ' + (r.available ? 'room-available' : 'room-unavailable');
+            div.textContent = r.name + (r.available ? '' : ' (Booked)');
+            if (r.available) {
+              div.addEventListener('click', () => {
+                document.querySelectorAll('.room-tile').forEach(t => t.classList.remove('room-selected'));
+                div.classList.add('room-selected');
+                roomInput.value = r.id;
+                submitBtn.disabled = false;
+              });
+            }
+            roomGrid.appendChild(div);
+          });
+        });
+    }
+
+    dateInput.addEventListener('change', fetchAvailability);
+    slotSelect.addEventListener('change', fetchAvailability);
+  </script>
+{% endblock %}

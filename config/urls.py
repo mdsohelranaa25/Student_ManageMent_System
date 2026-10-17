@@ -9,7 +9,13 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("", account_views.home, name="home"),
     path("accounts/", include("accounts.urls")),
-    path("student-dashboard/", account_views.student_profile, name="student_dashboard"),
+    path("academics/", include("academics.urls")),
+    path("student-dashboard/", account_views.student_dashboard_home, name="student_dashboard"),
+    path("student-dashboard/profile/", account_views.student_profile, name="student_profile"),
+    path("student-dashboard/routine/", account_views.student_routine, name="student_routine"),
+    path("teacher-dashboard/", account_views.teacher_dashboard_home, name="teacher_dashboard"),
+    path("teacher-dashboard/profile/", account_views.teacher_profile, name="teacher_profile"),
+    path("teacher-dashboard/routine/", account_views.teacher_routine, name="teacher_routine"),
 ]
 
 if settings.DEBUG:

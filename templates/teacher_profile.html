@@ -1,0 +1,40 @@
+{% extends "teacher_dashboard_section_base.html" %}
+{% block title %}Profile{% endblock %}
+
+{% block section_content %}
+  <div class="profile-hero">
+    <div class="profile-avatar-wrap">
+      {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" alt="Profile picture" class="profile-avatar">
+      {% else %}
+        <div class="profile-avatar profile-avatar-placeholder">{{ user.first_name|first|upper }}</div>
+      {% endif %}
+      <form method="post" enctype="multipart/form-data" id="pic-form">
+        {% csrf_token %}
+        <label for="id_profile_picture" class="avatar-edit-btn" title="Change photo">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        </label>
+        {{ form.profile_picture }}
+      </form>
+    </div>
+    <div class="profile-hero-info">
+      <h2>{{ user.first_name }}</h2>
+      <div class="profile-chips">
+        <span class="chip chip-rust">Teacher</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-card">
+    <div class="info-row"><span class="info-label">Username</span><span class="info-value">{{ user.username }}</span></div>
+    <div class="info-row"><span class="info-label">Department</span><span class="info-value">Institute of Information Technology (IIT), Jahangirnagar University</span></div>
+    <div class="info-row"><span class="info-label">Email</span><span class="info-value">{{ user.email }}</span></div>
+    <div class="info-row"><span class="info-label">Phone</span><span class="info-value">{{ user.phone }}</span></div>
+  </div>
+
+  <script>
+    document.getElementById('id_profile_picture').addEventListener('change', function () {
+      document.getElementById('pic-form').submit();
+    });
+  </script>
+{% endblock %}

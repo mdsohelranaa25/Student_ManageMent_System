@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Create Routine{% endblock %}
+
+{% block content %}
+  <div class="routine-heading">
+    <div class="eyebrow">Admin</div>
+    <h2 class="mb-4">Create Class Routine</h2>
+  </div>
+
+  <div class="routine-card">
+    <form method="post" id="routine-form">
+      {% csrf_token %}
+      <div class="routine-grid">
+        <div class="mb-3">
+          <label class="form-label">Batch</label>
+          <select name="batch" id="id_batch" class="form-select" required>
+            <option value="">Select batch</option>
+            {% for b in batches %}
+              <option value="{{ b.id }}">{{ b.name }} (Semester {{ b.current_semester }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Day</label>
+          <select name="day" id="id_day" class="form-select" required>
+            <option value="">Select day</option>
+            {% for value, label in days %}
+              <option value="{{ value }}">{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Time Slot</label>
+          <select name="time_slot" id="id_time_slot" class="form-select" required>
+            <option value="">Select time slot</option>
+            {% for ts in time_slots %}
+              <option value="{{ ts.id }}">{{ ts.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Course</label>
+          <select name="course" id="id_course" class="form-select" required disabled>
+            <option value="">Select batch first</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="batch-warning" class="alert alert-danger" style="display:none;">
+        This batch already has a class scheduled in this slot.
+      </div>
+
+      <label class="form-label">Room</label>
+      <div class="room-grid" id="room-grid">
+        <p class="text-muted small">Select day and time slot to see room availability.</p>
+      </div>
+      <input type="hidden" name="room" id="id_room">
+
+      <button type="submit" class="btn btn-primary mt-3" id="submit-btn" disabled>Add to Routine</button>
+    </form>
+  </div>
+
+  <h4 class="mt-5 mb-3">Existing Routine Entries</h4>
+  <div class="entry-list">
+    {% for r in existing %}
+      <div class="entry-row">
+        <span class="entry-date">{{ r.batch }}</span>
+        <span class="entry-time">{{ r.get_day_display }} &middot; {{ r.time_slot }}</span>
+        <span class="entry-course">{{ r.course.code }} - {{ r.course.title }}</span>
+        <span class="entry-room">{{ r.room }}</span>
+      </div>
+    {% empty %}
+      <p class="text-muted">No routine entries yet.</p>
+    {% endfor %}
+  </div>
+
+  <script>
+    const batchSelect = document.getElementById('id_batch');
+    const daySelect = document.getElementById('id_day');
+    const slotSelect = document.getElementById('id_time_slot');
+    const courseSelect = document.getElementById('id_course');
+    const roomGrid = document.getElementById('room-grid');
+    const roomInput = document.getElementById('id_room');
+    const submitBtn = document.getElementById('submit-btn');
+    const batchWarning = document.getElementById('batch-warning');
+
+    function fetchAvailability() {
+      const batch = batchSelect.value;
+      if (!batch) return;
+      const day = daySelect.value;
+      const slot = slotSelect.value;
+      let url = `/academics/routine/availability/?batch=${batch}`;
+      if (day) url += `&day=${day}`;
+      if (slot) url += `&time_slot=${slot}`;
+
+      fetch(url)
+        .then(res => res.json())
+        .then(data => {
+          courseSelect.innerHTML = '<option value="">Select course</option>';
+          data.courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = `${c.code} - ${c.title}`;
+            courseSelect.appendChild(opt);
+          });
+          courseSelect.disabled = false;
+
+          batchWarning.style.display = data.batch_slot_taken ? 'block' : 'none';
+
+          roomInput.value = '';
+          submitBtn.disabled = true;
+
+          if (day && slot) {
+            roomGrid.innerHTML = '';
+            data.rooms.forEach(r => {
+              const div = document.createElement('div');
+              div.className = 'room-tile ' + (r.available ? 'room-available' : 'room-unavailable');
+              div.textContent = r.name + (r.available ? '' : ' (Booked)');
+              if (r.available) {
+                div.addEventListener('click', () => {
+                  document.querySelectorAll('.room-tile').forEach(t => t.classList.remove('room-selected'));
+                  div.classList.add('room-selected');
+                  roomInput.value = r.id;
+                  submitBtn.disabled = false;
+                });
+              }
+              roomGrid.appendChild(div);
+            });
+          } else {
+            roomGrid.innerHTML = '<p class="text-muted small">Select day and time slot to see room availability.</p>';
+          }
+        });
+    }
+
+    batchSelect.addEventListener('change', fetchAvailability);
+    daySelect.addEventListener('change', fetchAvailability);
+    slotSelect.addEventListener('change', fetchAvailability);
+  </script>
+{% endblock %}

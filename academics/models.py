@@ -2,6 +2,14 @@ from django.db import models
 
 SEMESTER_CHOICES = [(i, f"{i}") for i in range(1, 9)]
 
+DAY_CHOICES = [
+    ("sun", "Sunday"),
+    ("mon", "Monday"),
+    ("tue", "Tuesday"),
+    ("wed", "Wednesday"),
+    ("thu", "Thursday"),
+]
+
 
 class Batch(models.Model):
     """A batch is identified by its admission year, e.g. 2023-24."""
@@ -67,3 +75,40 @@ class TimeSlot(models.Model):
 
     def __str__(self):
         return self.label
+
+
+class Routine(models.Model):
+    batch = models.ForeignKey("Batch", on_delete=models.CASCADE, related_name="routines")
+    day = models.CharField(max_length=3, choices=DAY_CHOICES)
+    time_slot = models.ForeignKey("TimeSlot", on_delete=models.CASCADE)
+    room = models.ForeignKey("Room", on_delete=models.CASCADE)
+    course = models.ForeignKey("Course", on_delete=models.CASCADE)
+
+    class Meta:
+        ordering = ["day", "time_slot__order"]
+        constraints = [
+            models.UniqueConstraint(fields=["batch", "day", "time_slot"], name="batch_day_slot_unique"),
+            models.UniqueConstraint(fields=["room", "day", "time_slot"], name="room_day_slot_unique"),
+        ]
+
+    def __str__(self):
+        return f"{self.batch} - {self.get_day_display()} {self.time_slot} - {self.course.code}"
+    
+class ExamRoutine(models.Model):
+    course = models.ForeignKey("Course", on_delete=models.CASCADE, related_name="exams")
+    date = models.DateField()
+    time_slot = models.ForeignKey("TimeSlot", on_delete=models.CASCADE)
+    room = models.ForeignKey("Room", on_delete=models.CASCADE)
+    created_by = models.ForeignKey(
+        "accounts.User", null=True, blank=True, on_delete=models.SET_NULL,
+        limit_choices_to={"role__in": ["teacher", "admin"]},
+    )
+
+    class Meta:
+        ordering = ["date", "time_slot__order"]
+        constraints = [
+            models.UniqueConstraint(fields=["room", "date", "time_slot"], name="exam_room_date_slot_unique"),
+        ]
+
+    def __str__(self):
+        return f"{self.course.code} exam - {self.date} {self.time_slot}"   

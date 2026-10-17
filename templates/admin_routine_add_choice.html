@@ -1,0 +1,24 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+  <h1>What do you want to add?</h1>
+  <div class="routine-choice-wrap">
+    <a href="/academics/routine/create/" class="routine-choice-btn">
+      <strong>Create Class Routine</strong>
+      <span>Weekly recurring class schedule, batch-wise</span>
+    </a>
+    <a href="/academics/exam-routine/create/" class="routine-choice-btn">
+      <strong>Create Exam Routine</strong>
+      <span>One-time exam, scheduled by date</span>
+    </a>
+  </div>
+  <style>
+    .routine-choice-wrap { display: flex; gap: 20px; margin-top: 24px; }
+    .routine-choice-btn {
+      display: block; padding: 24px 28px; background: #1b3a2b; color: #faf7f0;
+      border-radius: 8px; text-decoration: none; min-width: 220px;
+    }
+    .routine-choice-btn strong { display: block; font-size: 1.05rem; margin-bottom: 6px; }
+    .routine-choice-btn span { font-size: 0.85rem; color: #c3cabb; }
+    .routine-choice-btn:hover { background: #a8552f; color: #fff; }
+  </style>
+{% endblock %}

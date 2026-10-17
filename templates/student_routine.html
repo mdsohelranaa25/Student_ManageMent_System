@@ -1,0 +1,60 @@
+{% extends "dashboard_section_base.html" %}
+{% block title %}Routine{% endblock %}
+
+{% block section_content %}
+  <div class="eyebrow">Class Routine</div>
+  <h2 class="mb-3">
+    {% if view_mode == "combined" %}All Running Batches{% elif selected_batch %}{{ selected_batch.name }}{% else %}No batch set{% endif %}
+  </h2>
+
+  <select id="view-select" class="form-select routine-select" onchange="window.location.href='?view='+this.value">
+    <option value="mine" {% if view_mode == "mine" %}selected{% endif %}>My Batch</option>
+    <option value="combined" {% if view_mode == "combined" %}selected{% endif %}>Combined (All Running Batches)</option>
+    {% for b in all_batches %}
+      <option value="{{ b.id }}" {% if view_mode == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+    {% endfor %}
+  </select>
+
+  <div class="routine-table-wrap">
+    <table class="routine-grid-table">
+      <thead>
+        <tr>
+          <th class="day-col">Day</th>
+          {% for ts in time_slots %}<th>{{ ts.label }}</th>{% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in rows %}
+          <tr>
+            <td class="day-col">{{ row.label }}</td>
+            {% for cell in row.cells %}
+              <td>
+                {% for r in cell %}
+                  <div class="routine-cell-entry">
+                    {% if view_mode == "combined" %}<div class="cell-batch">{{ r.batch }}</div>{% endif %}
+                    <div class="cell-course">{{ r.course.code }}</div>
+                    <div class="cell-room">{{ r.room }}</div>
+                  </div>
+                {% endfor %}
+              </td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if upcoming_exams %}
+    <h4 class="mt-5 mb-3">Upcoming Exams</h4>
+    <div class="entry-list">
+      {% for e in upcoming_exams %}
+        <div class="entry-row exam-row">
+          <span class="entry-date">{{ e.date }}</span>
+          <span class="entry-time">{{ e.time_slot }}</span>
+          <span class="entry-course">{{ e.course.code }} - {{ e.course.title }}</span>
+          <span class="entry-room">{{ e.room }}</span>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}

@@ -6,14 +6,14 @@ from .models import Application, User
 
 @admin.register(User)
 class CustomUserAdmin(UserAdmin):
-    list_display = ("username", "email", "role", "batch", "is_active")
+    list_display = ("username", "email", "role", "batch", "roll", "is_active")
     list_filter = ("role", "batch", "is_active")
     search_fields = ("username", "email", "first_name", "last_name")
     fieldsets = UserAdmin.fieldsets + (
-        ("Department info", {"fields": ("role", "phone", "batch")}),
+        ("Department info", {"fields": ("role", "phone", "batch", "roll")}),
     )
     add_fieldsets = UserAdmin.add_fieldsets + (
-        ("Department info", {"fields": ("email", "role", "phone", "batch")}),
+        ("Department info", {"fields": ("email", "role", "phone", "batch", "roll")}),
     )
 
 

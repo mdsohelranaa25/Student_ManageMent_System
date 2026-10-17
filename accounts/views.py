@@ -9,6 +9,9 @@ from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
+from datetime import date as date_today
+
+from academics.models import Batch, ExamRoutine, Routine, TimeSlot
 from .forms import ApplicationForm, ForgotPasswordForm, ProfilePictureForm, SetNewPasswordForm
 from .models import Application, PasswordResetCode, User
 from .utils import generate_password, generate_reset_code, generate_student_username, generate_teacher_username
@@ -210,8 +213,16 @@ def set_new_password(request):
         form = SetNewPasswordForm()
 
     return render(request, "set_new_password.html", {"form": form})
+
+
 def student_only(user):
     return user.is_authenticated and user.role == "student"
+
+
+@login_required
+@user_passes_test(student_only)
+def student_dashboard_home(request):
+    return render(request, "student_dashboard_home.html", {"active": "home"})
 
 
 @login_required
@@ -222,8 +233,139 @@ def student_profile(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Profile picture updated.")
-            return redirect("student_dashboard")
+            return redirect("student_profile")
     else:
         form = ProfilePictureForm(instance=request.user)
 
     return render(request, "student_profile.html", {"form": form, "active": "profile"})
+
+@login_required
+@user_passes_test(student_only)
+def student_routine(request):
+    view_mode = request.GET.get("view", "mine")
+
+    if view_mode == "combined":
+        batches = Batch.objects.filter(is_running=True)
+        routines_qs = Routine.objects.filter(batch__in=batches).select_related("batch", "time_slot", "room", "course")
+        selected_batch = None
+    else:
+        if view_mode == "mine" or not view_mode.isdigit():
+            selected_batch = request.user.batch
+        else:
+            selected_batch = Batch.objects.filter(id=view_mode).first()
+        routines_qs = (
+            Routine.objects.filter(batch=selected_batch).select_related("batch", "time_slot", "room", "course")
+            if selected_batch else Routine.objects.none()
+        )
+
+    time_slots = list(TimeSlot.objects.all())
+    days = Routine._meta.get_field("day").choices
+
+    grid = {d[0]: {ts.id: [] for ts in time_slots} for d in days}
+    for r in routines_qs:
+        grid[r.day][r.time_slot_id].append(r)
+
+    if view_mode == "combined":
+        semesters = set(Batch.objects.filter(is_running=True).values_list("current_semester", flat=True))
+    elif selected_batch:
+        semesters = {selected_batch.current_semester}
+    else:
+        semesters = set()
+
+    upcoming_exams = ExamRoutine.objects.filter(
+        course__semester__in=semesters, date__gte=date_today.today()
+    ).select_related("course", "time_slot", "room").order_by("date", "time_slot__order")
+
+    rows = []
+    for day_value, day_label in days:
+        rows.append({
+            "label": day_label,
+            "cells": [grid[day_value][ts.id] for ts in time_slots],
+        })
+
+    context = {
+        "active": "routine",
+        "view_mode": view_mode,
+        "time_slots": time_slots,
+        "rows": rows,
+        "selected_batch": selected_batch,
+        "all_batches": Batch.objects.filter(is_running=True),
+        "upcoming_exams": upcoming_exams,
+    }
+    return render(request, "student_routine.html", context)
+def teacher_only(user):
+    return user.is_authenticated and user.role == "teacher"
+
+
+@login_required
+@user_passes_test(teacher_only)
+def teacher_dashboard_home(request):
+    return render(request, "teacher_dashboard_home.html", {"active": "home"})
+
+
+@login_required
+@user_passes_test(teacher_only)
+def teacher_profile(request):
+    if request.method == "POST":
+        form = ProfilePictureForm(request.POST, request.FILES, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Profile picture updated.")
+            return redirect("teacher_profile")
+    else:
+        form = ProfilePictureForm(instance=request.user)
+    return render(request, "teacher_profile.html", {"form": form, "active": "profile"})
+@login_required
+@user_passes_test(teacher_only)
+def teacher_routine(request):
+    view_mode = request.GET.get("view", "combined")
+
+    if view_mode == "combined" or not view_mode.isdigit():
+        batches = Batch.objects.filter(is_running=True)
+        routines_qs = Routine.objects.filter(batch__in=batches).select_related("batch", "time_slot", "room", "course")
+        selected_batch = None
+        view_mode = "combined"
+    else:
+        selected_batch = Batch.objects.filter(id=view_mode).first()
+        routines_qs = (
+            Routine.objects.filter(batch=selected_batch).select_related("batch", "time_slot", "room", "course")
+            if selected_batch else Routine.objects.none()
+        )
+
+    time_slots = list(TimeSlot.objects.all())
+    days = Routine._meta.get_field("day").choices
+
+    grid = {d[0]: {ts.id: [] for ts in time_slots} for d in days}
+    for r in routines_qs:
+        grid[r.day][r.time_slot_id].append(r)
+
+    if view_mode == "combined":
+        for day_value in grid:
+            for ts_id in grid[day_value]:
+                grid[day_value][ts_id].sort(key=lambda r: r.batch.current_semester or 0)
+
+    rows = []
+    for day_value, day_label in days:
+        rows.append({"label": day_label, "cells": [grid[day_value][ts.id] for ts in time_slots]})
+
+    if view_mode == "combined":
+        semesters = set(Batch.objects.filter(is_running=True).values_list("current_semester", flat=True))
+    elif selected_batch:
+        semesters = {selected_batch.current_semester}
+    else:
+        semesters = set()
+
+    upcoming_exams = ExamRoutine.objects.filter(
+        course__semester__in=semesters, date__gte=date_today.today()
+    ).select_related("course", "time_slot", "room").order_by("date", "time_slot__order")
+
+    context = {
+        "active": "routine",
+        "view_mode": view_mode,
+        "time_slots": time_slots,
+        "rows": rows,
+        "selected_batch": selected_batch,
+        "all_batches": Batch.objects.filter(is_running=True),
+        "upcoming_exams": upcoming_exams,
+    }
+    return render(request, "teacher_routine.html", context)

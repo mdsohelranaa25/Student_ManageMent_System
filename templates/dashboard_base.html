@@ -14,7 +14,11 @@
       </div>
 
       <nav>
-        <a href="/student-dashboard/" class="dash-link {% if active == 'profile' %}active{% endif %}">
+        <a href="/student-dashboard/" class="dash-link {% if active == 'home' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v10h12V10"/></svg>
+          <span>Home</span>
+        </a>
+        <a href="/student-dashboard/profile/" class="dash-link {% if active == 'profile' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
           <span>Profile</span>
         </a>
