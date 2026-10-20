@@ -19,6 +19,7 @@ urlpatterns = [
     path("student-dashboard/notice/<int:announcement_id>/comment/", account_views.student_post_comment, name="student_post_comment"),
     path("student-dashboard/notice/comment/<int:comment_id>/delete/", account_views.student_delete_comment, name="student_delete_comment"),
     path("student-dashboard/results/", account_views.student_results, name="student_results"),
+    path("student-dashboard/change-password/", account_views.student_change_password, name="student_change_password"),
     path("admin-dashboard/", account_views.admin_dashboard_home, name="admin_dashboard"),
     path("teacher-dashboard/", account_views.teacher_dashboard_home, name="teacher_dashboard"),
     path("teacher-dashboard/profile/", account_views.teacher_profile, name="teacher_profile"),
@@ -32,6 +33,7 @@ urlpatterns = [
     path("teacher-dashboard/announcement/<int:announcement_id>/edit/", account_views.teacher_edit_announcement, name="teacher_edit_announcement"),
     path("teacher-dashboard/announcement/<int:announcement_id>/delete/", account_views.teacher_delete_announcement, name="teacher_delete_announcement"),
     path("teacher-dashboard/announcement/comment/<int:comment_id>/delete/", account_views.teacher_delete_comment, name="teacher_delete_comment"),
+    path("teacher-dashboard/change-password/", account_views.teacher_change_password, name="teacher_change_password"),
 ]
 
 if settings.DEBUG:

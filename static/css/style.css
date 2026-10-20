@@ -1345,3 +1345,38 @@ h1, h2, h3, h4, .navbar-brand {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
+/* ---------- Change password (premium) ---------- */
+.password-wrap { display: flex; justify-content: center; margin-top: 10px; }
+
+.password-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 36px 40px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 10px 36px rgba(15, 38, 25, 0.08);
+  text-align: center;
+}
+
+.password-icon {
+  width: 56px; height: 56px; border-radius: 50%;
+  margin: 0 auto 16px auto;
+  background: var(--forest-deep); color: var(--ivory);
+  display: flex; align-items: center; justify-content: center;
+}
+
+.password-card h3 { font-family: 'Source Serif 4', serif; color: var(--forest-deep); margin-bottom: 4px; }
+.password-card form { text-align: left; }
+
+.password-card input[type="password"] {
+  width: 100%;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  padding: 10px 14px;
+}
+.password-card input[type="password"]:focus {
+  outline: none;
+  border-color: var(--forest);
+  box-shadow: 0 0 0 3px rgba(27, 58, 43, 0.12);
+}

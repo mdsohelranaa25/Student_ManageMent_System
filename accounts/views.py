@@ -3,8 +3,9 @@ from datetime import timedelta
 from django.contrib import messages
 from django.contrib.auth import views as auth_views
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.hashers import check_password, make_password
-from django.core.mail import send_mail
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth.hashers import check_password, make_passwordfrom django.core.mail import send_mail
 from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -490,3 +491,31 @@ def admin_dashboard_home(request):
         "running_batches": Batch.objects.filter(is_running=True).count(),
     }
     return render(request, "admin_dashboard_home.html", {"stats": stats})
+@login_required
+@user_passes_test(student_only)
+def student_change_password(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Password changed successfully.")
+            return redirect("student_change_password")
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, "student_change_password.html", {"form": form, "active": "password"})
+
+
+@login_required
+@user_passes_test(teacher_only)
+def teacher_change_password(request):
+    if request.method == "POST":
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)
+            messages.success(request, "Password changed successfully.")
+            return redirect("teacher_change_password")
+    else:
+        form = PasswordChangeForm(request.user)
+    return render(request, "teacher_change_password.html", {"form": form, "active": "password"})
