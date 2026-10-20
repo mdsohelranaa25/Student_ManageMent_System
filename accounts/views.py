@@ -11,7 +11,7 @@ from django.utils import timezone
 
 from datetime import date as date_today
 
-from academics.models import Batch, ExamRoutine, Routine, TimeSlot
+from academics.models import Announcement, AnnouncementComment, Batch, Course, ExamRoutine, Routine, SemesterResult, TimeSlot
 from .forms import ApplicationForm, ForgotPasswordForm, ProfilePictureForm, SetNewPasswordForm
 from .models import Application, PasswordResetCode, User
 from .utils import generate_password, generate_reset_code, generate_student_username, generate_teacher_username
@@ -369,3 +369,124 @@ def teacher_routine(request):
         "upcoming_exams": upcoming_exams,
     }
     return render(request, "teacher_routine.html", context)
+@login_required
+@user_passes_test(teacher_only)
+def teacher_announcement(request):
+    my_courses = Course.objects.filter(teacher=request.user)
+
+    if request.method == "POST":
+        course = Course.objects.get(id=request.POST["course"], teacher=request.user)
+        batch = Batch.objects.get(id=request.POST["batch"])
+        Announcement.objects.create(
+            teacher=request.user,
+            course=course,
+            batch=batch,
+            text=request.POST["text"],
+            image=request.FILES.get("image"),
+            attachment=request.FILES.get("attachment"),
+     )
+        messages.success(request, "Announcement posted.")
+        return redirect("teacher_announcement")
+
+    announcements = Announcement.objects.filter(teacher=request.user).select_related("course", "batch").prefetch_related("comments__student")
+
+    context = {
+        "active": "announcement",
+        "my_courses": my_courses,
+        "all_batches": Batch.objects.filter(is_running=True),
+        "announcements": announcements,
+    }
+    return render(request, "teacher_announcement.html", context)
+
+
+@login_required
+@user_passes_test(teacher_only)
+def teacher_announcement_comment(request, announcement_id):
+    announcement = Announcement.objects.get(id=announcement_id, teacher=request.user)
+    if request.method == "POST":
+        AnnouncementComment.objects.create(
+            announcement=announcement, student=request.user, text=request.POST["text"],
+        )
+    return redirect("teacher_announcement")
+
+
+@login_required
+@user_passes_test(student_only)
+def student_notice_board(request):
+    batch = request.user.batch
+    announcements = (
+        Announcement.objects.filter(batch=batch).select_related("course", "teacher")
+        .prefetch_related("comments__student")
+        if batch else Announcement.objects.none()
+    )
+    context = {"active": "notice", "announcements": announcements}
+    return render(request, "student_notice_board.html", context)
+
+
+@login_required
+@user_passes_test(student_only)
+def student_post_comment(request, announcement_id):
+    announcement = Announcement.objects.get(id=announcement_id, batch=request.user.batch)
+    if request.method == "POST":
+        AnnouncementComment.objects.create(
+            announcement=announcement, student=request.user, text=request.POST["text"],
+        )
+    return redirect("student_notice_board")
+
+@login_required
+@user_passes_test(teacher_only)
+def teacher_edit_announcement(request, announcement_id):
+    announcement = Announcement.objects.get(id=announcement_id, teacher=request.user)
+    if request.method == "POST":
+        announcement.text = request.POST["text"]
+        if request.FILES.get("image"):
+            announcement.image = request.FILES["image"]
+        if request.FILES.get("attachment"):
+            announcement.attachment = request.FILES["attachment"]
+        announcement.save()
+        messages.success(request, "Announcement updated.")
+    return redirect("teacher_announcement")
+
+
+@login_required
+@user_passes_test(teacher_only)
+def teacher_delete_announcement(request, announcement_id):
+    Announcement.objects.filter(id=announcement_id, teacher=request.user).delete()
+    messages.success(request, "Announcement deleted.")
+    return redirect("teacher_announcement")
+
+
+@login_required
+@user_passes_test(teacher_only)
+def teacher_delete_comment(request, comment_id):
+    AnnouncementComment.objects.filter(id=comment_id, announcement__teacher=request.user).delete()
+    return redirect("teacher_announcement")
+
+
+@login_required
+@user_passes_test(student_only)
+def student_delete_comment(request, comment_id):
+    AnnouncementComment.objects.filter(id=comment_id, student=request.user).delete()
+    return redirect("student_notice_board")
+@login_required
+@user_passes_test(student_only)
+def student_results(request):
+    results = (
+        SemesterResult.objects.filter(student=request.user)
+        .prefetch_related("course_grades__course")
+        .order_by("semester")
+    )
+    latest_cgpa = results.last().cgpa if results else None
+    context = {"active": "results", "results": results, "latest_cgpa": latest_cgpa}
+    return render(request, "student_results.html", context)
+@login_required
+@user_passes_test(admin_only)
+def admin_dashboard_home(request):
+    stats = {
+        "pending_applications": Application.objects.filter(status="pending").count(),
+        "total_students": User.objects.filter(role="student").count(),
+        "total_teachers": User.objects.filter(role="teacher").count(),
+        "total_courses": Course.objects.count(),
+        "running_batches": Batch.objects.filter(is_running=True).count(),
+    }
+    return render(request, "admin_dashboard_home.html", {"stats": stats})

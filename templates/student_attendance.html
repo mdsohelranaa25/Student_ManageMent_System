@@ -1,0 +1,43 @@
+{% extends "dashboard_section_base.html" %}
+{% block title %}Attendance{% endblock %}
+
+{% block section_content %}
+  <div class="eyebrow">Attendance</div>
+  <h2 class="mb-3">{% if selected_course %}{{ selected_course.code }} - {{ selected_course.title }}{% else %}No course{% endif %}</h2>
+
+  <select class="form-select routine-select" onchange="window.location.href='?course='+this.value">
+    {% for c in courses %}
+      <option value="{{ c.id }}" {% if selected_course and c.id == selected_course.id %}selected{% endif %}>{{ c.code }} - {{ c.title }}</option>
+    {% endfor %}
+  </select>
+
+  <div class="attendance-summary">
+    <div class="summary-card">
+      <div class="summary-value">{{ total_count }}</div>
+      <div class="summary-label">Total Classes</div>
+    </div>
+    <div class="summary-card summary-success">
+      <div class="summary-value">{{ present_count }}</div>
+      <div class="summary-label">Present</div>
+    </div>
+    <div class="summary-card summary-danger">
+      <div class="summary-value">{{ total_count|add:"-"|add:present_count|default:0 }}</div>
+      <div class="summary-label">Absent</div>
+    </div>
+    <div class="summary-card summary-rust">
+      <div class="summary-value">{{ percentage }}%</div>
+      <div class="summary-label">Attendance Rate</div>
+    </div>
+  </div>
+
+  <div class="attendance-log">
+    {% for r in records %}
+      <div class="log-row">
+        <span class="log-date">{{ r.date }}</span>
+        <span class="log-status log-{{ r.status }}">{% if r.status == 'P' %}Present{% else %}Absent{% endif %}</span>
+      </div>
+    {% empty %}
+      <p class="text-muted">No attendance records yet for this course.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

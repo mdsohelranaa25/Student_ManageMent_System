@@ -4,7 +4,8 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 
-from .models import Batch, Course, ExamRoutine, Room, Routine, TimeSlot
+from accounts.models import User
+from .models import Batch, Course, CourseGrade, ExamRoutine, Room, Routine, SemesterResult, TimeSlot
 
 
 def admin_or_teacher(user):
@@ -41,8 +42,6 @@ def create_routine(request):
 
 @staff_member_required
 def routine_availability(request):
-    """Returns which courses (for the chosen batch's semester) and which rooms
-    are free for a given batch + day + time_slot."""
     batch_id = request.GET.get("batch")
     day = request.GET.get("day")
     time_slot_id = request.GET.get("time_slot")
@@ -57,21 +56,13 @@ def routine_availability(request):
         )
         batch_taken = Routine.objects.filter(batch=batch, day=day, time_slot_id=time_slot_id).exists()
         for room in Room.objects.all():
-            rooms.append({
-                "id": room.id,
-                "name": room.name,
-                "available": room.id not in booked_room_ids,
-            })
+            rooms.append({"id": room.id, "name": room.name, "available": room.id not in booked_room_ids})
     else:
         batch_taken = False
         for room in Room.objects.all():
             rooms.append({"id": room.id, "name": room.name, "available": True})
 
-    return JsonResponse({
-        "courses": courses,
-        "rooms": rooms,
-        "batch_slot_taken": batch_taken,
-    })
+    return JsonResponse({"courses": courses, "rooms": rooms, "batch_slot_taken": batch_taken})
 
 
 @login_required
@@ -125,3 +116,61 @@ def exam_room_availability(request):
             rooms.append({"id": room.id, "name": room.name, "available": True})
 
     return JsonResponse({"rooms": rooms})
+
+
+@staff_member_required
+def post_result(request):
+    if request.method == "POST":
+        student = User.objects.get(id=request.POST["student"], role="student")
+        semester = int(request.POST["semester"])
+        gpa = request.POST["gpa"]
+        cgpa = request.POST["cgpa"]
+
+        semester_result, _ = SemesterResult.objects.update_or_create(
+            student=student, semester=semester, defaults={"gpa": gpa, "cgpa": cgpa},
+        )
+        semester_result.course_grades.all().delete()
+
+        course_ids = request.POST.getlist("course")
+        grades = request.POST.getlist("grade")
+        points = request.POST.getlist("grade_point")
+        for course_id, grade, point in zip(course_ids, grades, points):
+            if course_id and grade and point:
+                CourseGrade.objects.create(
+                    semester_result=semester_result, course_id=course_id, grade=grade, grade_point=point,
+                )
+
+        messages.success(request, f"Result posted for {student.username}, semester {semester}.")
+        return redirect("post_result")
+
+    edit_id = request.GET.get("edit")
+    edit_result = None
+    if edit_id:
+        edit_result = SemesterResult.objects.filter(id=edit_id).prefetch_related("course_grades__course").first()
+
+    students = User.objects.filter(role="student").order_by("username")
+    courses_by_semester = {}
+    for c in Course.objects.all():
+        courses_by_semester.setdefault(c.semester, []).append({"id": c.id, "code": c.code, "title": c.title})
+
+    existing_results = (
+        SemesterResult.objects.select_related("student")
+        .prefetch_related("course_grades__course")
+        .order_by("-published_at")[:30]
+    )
+
+    context = {
+        "students": students,
+        "semesters": range(1, 9),
+        "courses_by_semester": courses_by_semester,
+        "existing_results": existing_results,
+        "edit_result": edit_result,
+    }
+    return render(request, "post_result.html", context)
+
+
+@staff_member_required
+def delete_result(request, result_id):
+    SemesterResult.objects.filter(id=result_id).delete()
+    messages.success(request, "Result deleted.")
+    return redirect("post_result")

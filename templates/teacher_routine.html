@@ -7,12 +7,15 @@
     {% if view_mode == "combined" %}All Running Batches{% elif selected_batch %}{{ selected_batch.name }}{% else %}No batch set{% endif %}
   </h2>
 
-  <select id="view-select" class="form-select routine-select" onchange="window.location.href='?view='+this.value">
-    <option value="combined" {% if view_mode == "combined" %}selected{% endif %}>Combined (All Running Batches)</option>
-    {% for b in all_batches %}
-      <option value="{{ b.id }}" {% if view_mode == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
-    {% endfor %}
-  </select>
+  <div class="select-wrap">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+    <select id="view-select" class="premium-select" onchange="window.location.href='?view='+this.value">
+      <option value="combined" {% if view_mode == "combined" %}selected{% endif %}>Combined (All Running Batches)</option>
+      {% for b in all_batches %}
+        <option value="{{ b.id }}" {% if view_mode == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
 
   <div class="routine-table-wrap">
     <table class="routine-grid-table">

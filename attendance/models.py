@@ -1,20 +1,26 @@
 from django.db import models
 
 
-class Batch(models.Model):
-    """A batch is identified by its admission year, e.g. 2023-24."""
+class Attendance(models.Model):
+    STATUS_CHOICES = [("P", "Present"), ("A", "Absent")]
 
-    name = models.CharField(
-        max_length=20, unique=True, help_text="Admission year, e.g. 2023-24"
+    student = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE,
+        limit_choices_to={"role": "student"}, related_name="attendance_records",
     )
-    is_running = models.BooleanField(
-        default=True, help_text="Untick when this batch has finished."
+    course = models.ForeignKey("academics.Course", on_delete=models.CASCADE)
+    date = models.DateField()
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default="P")
+    marked_by = models.ForeignKey(
+        "accounts.User", null=True, blank=True, on_delete=models.SET_NULL,
+        related_name="attendance_marked", limit_choices_to={"role__in": ["teacher", "admin"]},
     )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["-name"]
-        verbose_name_plural = "batches"
+        ordering = ["-date"]
+        constraints = [
+            models.UniqueConstraint(fields=["student", "course", "date"], name="attendance_once_per_day"),
+        ]
 
     def __str__(self):
-        return self.name
+        return f"{self.student.username} - {self.course.code} - {self.date} - {self.get_status_display()}"

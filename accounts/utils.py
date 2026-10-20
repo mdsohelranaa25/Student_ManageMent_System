@@ -13,45 +13,30 @@ def _short_name(full_name):
 
 
 def generate_student_username(batch, full_name):
-    """
-    Batch '2023-24', name 'Sohel Rana' -> '2024001sohel', '2024002sohel', ...
-    """
     start, end_suffix = batch.name.split("-")
-    year_prefix = start[:2] + end_suffix  # '20' + '24' = '2024'
+    year_prefix = start[:2] + end_suffix
 
-    last_user = (
-        User.objects.filter(username__startswith=year_prefix)
-        .order_by("-username")
-        .first()
-    )
-    if last_user:
-        last_seq = int(last_user.username[len(year_prefix):len(year_prefix) + 3])
-        seq = last_seq + 1
-    else:
-        seq = 1
+    last_seq = 0
+    for u in User.objects.filter(username__startswith=year_prefix).order_by("-username"):
+        number_part = u.username[len(year_prefix):len(year_prefix) + 3]
+        if number_part.isdigit():
+            last_seq = int(number_part)
+            break
 
-    return f"{year_prefix}{seq:03d}{_short_name(full_name)}"
+    return f"{year_prefix}{last_seq + 1:03d}{_short_name(full_name)}"
 
 
 def generate_teacher_username(full_name):
-    """
-    'T' + current year + sequence + name -> 'T2026001sohel', ...
-    """
     year_prefix = f"T{date.today().year}"
 
-    last_user = (
-        User.objects.filter(username__startswith=year_prefix)
-        .order_by("-username")
-        .first()
-    )
-    if last_user:
-        last_seq = int(last_user.username[len(year_prefix):len(year_prefix) + 3])
-        seq = last_seq + 1
-    else:
-        seq = 1
+    last_seq = 0
+    for u in User.objects.filter(username__startswith=year_prefix).order_by("-username"):
+        number_part = u.username[len(year_prefix):len(year_prefix) + 3]
+        if number_part.isdigit():
+            last_seq = int(number_part)
+            break
 
-    return f"{year_prefix}{seq:03d}{_short_name(full_name)}"
-
+    return f"{year_prefix}{last_seq + 1:03d}{_short_name(full_name)}"
 
 def generate_password(length=10):
     alphabet = string.ascii_letters + string.digits

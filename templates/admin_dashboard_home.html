@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+  <div class="admin-hero">
+    <div class="admin-hero-monogram">A</div>
+    <div class="admin-hero-content">
+      <div class="eyebrow">Department Control Center</div>
+      <h1>Welcome back, {{ user.first_name }}</h1>
+      <p>Manage applications, academics, and department operations from one place.</p>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat-card stat-rust">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg></div>
+      <div class="stat-value">{{ stats.pending_applications }}</div>
+      <div class="stat-label">Pending Applications</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M16 11l2 2 4-4"/></svg></div>
+      <div class="stat-value">{{ stats.total_students }}</div>
+      <div class="stat-label">Total Students</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+      <div class="stat-value">{{ stats.total_teachers }}</div>
+      <div class="stat-label">Total Teachers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V6a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/></svg></div>
+      <div class="stat-value">{{ stats.total_courses }}</div>
+      <div class="stat-label">Courses in Catalog</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+      <div class="stat-value">{{ stats.running_batches }}</div>
+      <div class="stat-label">Running Batches</div>
+    </div>
+  </div>
+
+  <div class="tile-section">
+    <div class="tile-section-title">People &amp; Applications</div>
+    <div class="tile-grid">
+      <a href="/accounts/applications/" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg></div>
+        <div class="tile-title">Review Applications</div>
+        <div class="tile-desc">Approve or reject new student/teacher requests</div>
+      </a>
+      <a href="/admin/accounts/user/?role__exact=student" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M16 11l2 2 4-4"/></svg></div>
+        <div class="tile-title">Manage Students</div>
+        <div class="tile-desc">Edit roll numbers, batches, and accounts</div>
+      </a>
+      <a href="/admin/accounts/user/?role__exact=teacher" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <div class="tile-title">Manage Teachers</div>
+        <div class="tile-desc">Edit teacher accounts and details</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="tile-section">
+    <div class="tile-section-title">Academic Operations</div>
+    <div class="tile-grid">
+      <a href="/academics/routine/create/" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+        <div class="tile-title">Class Routine</div>
+        <div class="tile-desc">Build the weekly schedule, conflict-checked</div>
+      </a>
+      <a href="/academics/exam-routine/create/" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></div>
+        <div class="tile-title">Exam Routine</div>
+        <div class="tile-desc">Schedule exams by semester, date and room</div>
+      </a>
+      <a href="/academics/result/post/" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></div>
+        <div class="tile-title">Post Results</div>
+        <div class="tile-desc">Publish semester GPA, CGPA and grades</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="tile-section">
+    <div class="tile-section-title">System &amp; Catalog</div>
+    <div class="tile-grid">
+      <a href="/admin/academics/course/" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V6a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/></svg></div>
+        <div class="tile-title">Manage Courses</div>
+        <div class="tile-desc">Assign teachers, edit the catalog</div>
+      </a>
+      <a href="/admin/academics/batch/" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></div>
+        <div class="tile-title">Manage Batches</div>
+        <div class="tile-desc">Set current semester, running status</div>
+      </a>
+      <a href="/admin/" class="tile-card">
+        <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 009 4.6a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg></div>
+        <div class="tile-title">Full Django Admin</div>
+        <div class="tile-desc">Direct access to every table and record</div>
+      </a>
+    </div>
+  </div>
+{% endblock %}

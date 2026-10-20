@@ -1,0 +1,35 @@
+{% extends "dashboard_section_base.html" %}
+{% block title %}Results{% endblock %}
+
+{% block section_content %}
+  <div class="eyebrow">Academic Results</div>
+  <h2 class="mb-2">Your Results</h2>
+  {% if latest_cgpa %}
+    <div class="cgpa-banner">
+      <span class="cgpa-label">Current CGPA</span>
+      <span class="cgpa-value">{{ latest_cgpa }}</span>
+    </div>
+  {% endif %}
+
+  <div class="result-list mt-4">
+    {% for r in results %}
+      <div class="result-card">
+        <div class="result-head">
+          <h4>Semester {{ r.semester }}</h4>
+          <div class="result-chips">
+            <span class="chip chip-rust">GPA {{ r.gpa }}</span>
+            <span class="chip">CGPA {{ r.cgpa }}</span>
+          </div>
+        </div>
+        <table class="mock result-table">
+          <tr><th>Course</th><th>Grade</th><th>Grade Point</th></tr>
+          {% for g in r.course_grades.all %}
+            <tr><td>{{ g.course.code }} - {{ g.course.title }}</td><td>{{ g.grade }}</td><td>{{ g.grade_point }}</td></tr>
+          {% endfor %}
+        </table>
+      </div>
+    {% empty %}
+      <p class="text-muted">No results have been published yet.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

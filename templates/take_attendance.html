@@ -1,0 +1,141 @@
+{% extends "teacher_dashboard_section_base.html" %}
+{% block title %}Take Attendance{% endblock %}
+
+{% block section_content %}
+  <div class="eyebrow">Attendance</div>
+  <h2 class="mb-4">Take Attendance</h2>
+
+  <div class="routine-card">
+    <div class="routine-grid">
+      <div class="mb-3">
+        <label class="form-label">Batch</label>
+        <select id="id_batch" class="form-select">
+          <option value="">Select batch</option>
+          {% for b in batches %}<option value="{{ b.id }}">{{ b.name }} (Sem {{ b.current_semester }})</option>{% endfor %}
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Course</label>
+        <select id="id_course" class="form-select" disabled><option value="">Select batch first</option></select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Date</label>
+        <input type="date" id="id_date" class="form-control">
+      </div>
+    </div>
+
+    <div id="student-list-wrap" style="display:none;">
+      <div class="attendance-toolbar">
+        <button type="button" class="btn btn-outline-primary btn-sm" id="mark-all-present">Mark All Present</button>
+        <span class="attendance-count" id="attendance-count"></span>
+      </div>
+      <div id="student-list" class="student-list"></div>
+      <button type="button" class="btn btn-primary mt-3" id="save-btn">Save Attendance</button>
+      <div id="save-msg" class="mt-2"></div>
+    </div>
+  </div>
+
+  <script>
+    const batchSelect = document.getElementById('id_batch');
+    const courseSelect = document.getElementById('id_course');
+    const dateInput = document.getElementById('id_date');
+    const listWrap = document.getElementById('student-list-wrap');
+    const studentList = document.getElementById('student-list');
+    const saveBtn = document.getElementById('save-btn');
+    const saveMsg = document.getElementById('save-msg');
+    const countLabel = document.getElementById('attendance-count');
+
+    dateInput.value = new Date().toISOString().split('T')[0];
+
+    batchSelect.addEventListener('change', function () {
+      courseSelect.innerHTML = '<option value="">Loading...</option>';
+      courseSelect.disabled = true;
+      listWrap.style.display = 'none';
+      if (!this.value) { courseSelect.innerHTML = '<option value="">Select batch first</option>'; return; }
+
+      fetch(`/teacher-dashboard/attendance/options/?batch=${this.value}`)
+        .then(res => res.json())
+        .then(data => {
+          courseSelect.innerHTML = '<option value="">Select course</option>';
+          data.courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.code + ' - ' + c.title;
+            courseSelect.appendChild(opt);
+          });
+          courseSelect.disabled = false;
+        });
+    });
+
+    function loadStudents() {
+      if (!batchSelect.value || !courseSelect.value || !dateInput.value) return;
+      fetch(`/teacher-dashboard/attendance/students/?batch=${batchSelect.value}&course=${courseSelect.value}&date=${dateInput.value}`)
+        .then(res => res.json())
+        .then(data => {
+          studentList.innerHTML = '';
+          data.students.forEach(s => {
+            const row = document.createElement('div');
+            row.className = 'student-row';
+            row.dataset.studentId = s.id;
+            row.dataset.status = s.status;
+            row.innerHTML = `
+              <span class="student-roll">${s.roll || '-'}</span>
+              <span class="student-name">${s.name} <small class="text-muted">(${s.username})</small></span>
+              <span class="status-toggle">
+                <button type="button" class="status-btn status-p ${s.status === 'P' ? 'active' : ''}">P</button>
+                <button type="button" class="status-btn status-a ${s.status === 'A' ? 'active' : ''}">A</button>
+              </span>`;
+            studentList.appendChild(row);
+          });
+          attachToggleHandlers();
+          updateCount();
+          listWrap.style.display = 'block';
+          saveMsg.innerHTML = '';
+        });
+    }
+
+    function attachToggleHandlers() {
+      document.querySelectorAll('.student-row').forEach(row => {
+        row.querySelector('.status-p').addEventListener('click', () => setStatus(row, 'P'));
+        row.querySelector('.status-a').addEventListener('click', () => setStatus(row, 'A'));
+      });
+    }
+
+    function setStatus(row, status) {
+      row.dataset.status = status;
+      row.querySelector('.status-p').classList.toggle('active', status === 'P');
+      row.querySelector('.status-a').classList.toggle('active', status === 'A');
+      updateCount();
+    }
+
+    function updateCount() {
+      const rows = document.querySelectorAll('.student-row');
+      const present = [...rows].filter(r => r.dataset.status === 'P').length;
+      countLabel.textContent = `${present} / ${rows.length} present`;
+    }
+
+    document.getElementById('mark-all-present').addEventListener('click', () => {
+      document.querySelectorAll('.student-row').forEach(row => setStatus(row, 'P'));
+    });
+
+    courseSelect.addEventListener('change', loadStudents);
+    dateInput.addEventListener('change', loadStudents);
+
+    saveBtn.addEventListener('click', () => {
+      const formData = new FormData();
+      formData.append('course', courseSelect.value);
+      formData.append('date', dateInput.value);
+      document.querySelectorAll('.student-row').forEach(row => {
+        formData.append('student_id', row.dataset.studentId);
+        formData.append('status', row.dataset.status);
+      });
+      formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+      fetch('/teacher-dashboard/attendance/save/', { method: 'POST', body: formData })
+        .then(res => res.json())
+        .then(data => {
+          saveMsg.innerHTML = `<div class="alert alert-info">${data.message}</div>`;
+        });
+    });
+  </script>
+{% endblock %}

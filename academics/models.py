@@ -112,3 +112,63 @@ class ExamRoutine(models.Model):
 
     def __str__(self):
         return f"{self.course.code} exam - {self.date} {self.time_slot}"   
+class Announcement(models.Model):
+    teacher = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE,
+        limit_choices_to={"role": "teacher"}, related_name="announcements",
+    )
+    course = models.ForeignKey("Course", on_delete=models.CASCADE)
+    batch = models.ForeignKey("Batch", on_delete=models.CASCADE)
+    text = models.TextField()
+    image = models.ImageField(upload_to="announcements/", null=True, blank=True)
+    attachment = models.FileField(upload_to="announcements/files/", null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.course.code} - {self.batch} - {self.created_at:%d %b %Y}"
+
+
+class AnnouncementComment(models.Model):
+    announcement = models.ForeignKey(Announcement, on_delete=models.CASCADE, related_name="comments")
+    student = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE, limit_choices_to={"role": "student"},
+    )
+    text = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
+
+    def __str__(self):
+        return f"{self.student.username}: {self.text[:30]}"
+class SemesterResult(models.Model):
+    student = models.ForeignKey(
+        "accounts.User", on_delete=models.CASCADE,
+        limit_choices_to={"role": "student"}, related_name="semester_results",
+    )
+    semester = models.PositiveSmallIntegerField(choices=SEMESTER_CHOICES)
+    gpa = models.DecimalField(max_digits=3, decimal_places=2)
+    cgpa = models.DecimalField(max_digits=3, decimal_places=2)
+    published_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["semester"]
+        constraints = [
+            models.UniqueConstraint(fields=["student", "semester"], name="one_result_per_student_semester"),
+        ]
+
+    def __str__(self):
+        return f"{self.student.username} - Semester {self.semester} - GPA {self.gpa}"
+
+
+class CourseGrade(models.Model):
+    semester_result = models.ForeignKey(SemesterResult, on_delete=models.CASCADE, related_name="course_grades")
+    course = models.ForeignKey("Course", on_delete=models.CASCADE)
+    grade = models.CharField(max_length=5)
+    grade_point = models.DecimalField(max_digits=3, decimal_places=2)
+
+    def __str__(self):
+        return f"{self.course.code} - {self.grade}"

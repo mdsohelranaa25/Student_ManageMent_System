@@ -1,0 +1,63 @@
+{% extends "dashboard_section_base.html" %}
+{% block title %}Notice Board{% endblock %}
+
+{% block section_content %}
+  <div class="eyebrow">Notice Board</div>
+  <h2 class="mb-4">Announcements for Your Batch</h2>
+
+  <div class="notice-list">
+    {% for a in announcements %}
+      <div class="notice-card">
+        <div class="notice-head">
+          <div class="notice-avatar">{{ a.teacher.first_name|first|upper }}</div>
+          <div>
+            <div class="notice-course-batch">
+              <span class="chip chip-rust">{{ a.course.code }}</span>
+              <span class="chip">{{ a.teacher.first_name }}</span>
+            </div>
+            <div class="notice-date">{{ a.created_at|date:"d M Y, h:i A" }}</div>
+          </div>
+        </div>
+
+        <p class="notice-text">{{ a.text }}</p>
+        {% if a.image %}
+          <a href="{{ a.image.url }}" target="_blank"><img src="{{ a.image.url }}" class="notice-image" alt=""></a>
+        {% endif %}
+        {% if a.attachment %}
+          <a href="{{ a.attachment.url }}" target="_blank" class="attachment-link">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v4"/><path d="M14 3v5h5"/></svg>
+            {{ a.attachment.name|cut:"announcements/files/" }}
+          </a>
+        {% endif %}
+
+        <div class="comment-thread">
+          {% for c in a.comments.all %}
+            <div class="comment-row">
+              <div class="comment-avatar">{{ c.student.first_name|first|upper }}</div>
+              <div class="comment-body">
+                <span class="comment-author">{{ c.student.first_name }}</span>
+                <span class="comment-text">{{ c.text }}</span>
+              </div>
+              {% if c.student_id == user.id %}
+                <form method="post" action="{% url 'student_delete_comment' c.id %}" onsubmit="return confirm('Delete your comment?');">
+                  {% csrf_token %}
+                  <button type="submit" class="icon-btn icon-btn-sm" title="Delete your comment">&times;</button>
+                </form>
+              {% endif %}
+            </div>
+          {% empty %}
+            <p class="text-muted small">No comments yet.</p>
+          {% endfor %}
+        </div>
+
+        <form method="post" action="{% url 'student_post_comment' a.id %}" class="comment-form">
+          {% csrf_token %}
+          <input type="text" name="text" class="form-control form-control-sm" placeholder="Write a comment..." required>
+          <button type="submit" class="btn btn-outline-primary btn-sm">Send</button>
+        </form>
+      </div>
+    {% empty %}
+      <p class="text-muted">No announcements yet.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

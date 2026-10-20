@@ -1,8 +1,10 @@
 from django.contrib import admin
 from django.shortcuts import render
 
-from .models import Batch, Course, ExamRoutine, Room, Routine, TimeSlot
-
+from .models import (
+    Announcement, AnnouncementComment, Batch, Course, CourseGrade,
+    ExamRoutine, Room, Routine, SemesterResult, TimeSlot,
+)
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
     list_display = ("name", "is_running", "current_semester", "created_at")
@@ -46,3 +48,21 @@ class ExamRoutineAdmin(admin.ModelAdmin):
 
     def has_add_permission(self, request):
         return False
+@admin.register(Announcement)
+class AnnouncementAdmin(admin.ModelAdmin):
+    list_display = ("course", "batch", "teacher", "created_at")
+    list_filter = ("batch", "course")
+
+
+@admin.register(AnnouncementComment)
+class AnnouncementCommentAdmin(admin.ModelAdmin):
+    list_display = ("announcement", "student", "text", "created_at")
+@admin.register(SemesterResult)
+class SemesterResultAdmin(admin.ModelAdmin):
+    list_display = ("student", "semester", "gpa", "cgpa", "published_at")
+    list_filter = ("semester",)
+
+
+@admin.register(CourseGrade)
+class CourseGradeAdmin(admin.ModelAdmin):
+    list_display = ("semester_result", "course", "grade", "grade_point")
