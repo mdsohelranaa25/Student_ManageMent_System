@@ -1,4 +1,3 @@
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import render
@@ -85,6 +84,64 @@ def save_attendance(request):
         )
 
     return JsonResponse({"ok": True, "message": f"Attendance saved for {course.code} on {date}."})
+
+
+@login_required
+@user_passes_test(teacher_only)
+def attendance_sheet(request):
+    batches = Batch.objects.filter(is_running=True)
+    batch_id = request.GET.get("batch", "")
+    course_id = request.GET.get("course", "")
+
+    selected_batch = Batch.objects.filter(id=batch_id).first() if batch_id.isdigit() else None
+
+    course_options = []
+    selected_course = None
+    if selected_batch:
+        course_options = Course.objects.filter(teacher=request.user, semester=selected_batch.current_semester)
+        if course_id.isdigit():
+            selected_course = course_options.filter(id=course_id).first()
+
+    dates = []
+    rows = []
+    class_average = None
+
+    if selected_batch and selected_course:
+        students = User.objects.filter(
+            role="student", batch=selected_batch, is_active=True
+        ).order_by("roll", "username")
+        records = Attendance.objects.filter(course=selected_course, student__batch=selected_batch)
+        dates = sorted(set(records.values_list("date", flat=True)))
+        lookup = {(r.student_id, r.date): r.status for r in records}
+
+        for s in students:
+            statuses = [lookup.get((s.id, d), "") for d in dates]
+            marked = [x for x in statuses if x]
+            present = marked.count("P")
+            total = len(marked)
+            percentage = round(present / total * 100, 1) if total else 0
+            rows.append({
+                "student": s,
+                "statuses": statuses,
+                "present": present,
+                "total": total,
+                "percentage": percentage,
+            })
+
+        if rows:
+            class_average = round(sum(r["percentage"] for r in rows) / len(rows), 1)
+
+    context = {
+        "active": "attendance",
+        "batches": batches,
+        "selected_batch": selected_batch,
+        "selected_course": selected_course,
+        "course_options": course_options,
+        "dates": dates,
+        "rows": rows,
+        "class_average": class_average,
+    }
+    return render(request, "attendance_sheet.html", context)
 
 
 @login_required

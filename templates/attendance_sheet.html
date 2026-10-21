@@ -1,0 +1,97 @@
+{% extends "teacher_dashboard_section_base.html" %}
+{% block title %}Attendance Sheet{% endblock %}
+
+{% block section_content %}
+  <div class="eyebrow">Attendance</div>
+  <h2 class="mb-3">Attendance Sheet</h2>
+
+  <div class="seg-control">
+    <a href="/teacher-dashboard/attendance/" class="seg-btn">Take Attendance</a>
+    <a href="/teacher-dashboard/attendance/sheet/" class="seg-btn active">View Sheet</a>
+  </div>
+
+  <div class="sheet-filters">
+    <div class="select-wrap">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="4"/><path d="M2 20c0-4 3-6 7-6s7 2 7 6M17 11a3 3 0 100-6M22 20c0-3-2-5-5-5"/></svg>
+      <select id="sheet-batch" class="premium-select">
+        <option value="">Select batch</option>
+        {% for b in batches %}
+          <option value="{{ b.id }}" {% if selected_batch and b.id == selected_batch.id %}selected{% endif %}>{{ b.name }} (Sem {{ b.current_semester }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="select-wrap">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V6a2 2 0 012-2h9l5 5v10a2 2 0 01-2 2H6a2 2 0 01-2-2z"/></svg>
+      <select id="sheet-course" class="premium-select" {% if not selected_batch %}disabled{% endif %}>
+        <option value="">{% if selected_batch %}Select course{% else %}Select batch first{% endif %}</option>
+        {% for c in course_options %}
+          <option value="{{ c.id }}" {% if selected_course and c.id == selected_course.id %}selected{% endif %}>{{ c.code }} - {{ c.title }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  {% if selected_batch and not course_options %}
+    <div class="alert alert-info">No course assigned to you for this batch's current semester.</div>
+  {% endif %}
+
+  {% if selected_course %}
+    <div class="sheet-summary">
+      <span class="chip chip-rust">{{ selected_course.code }}</span>
+      <span class="chip">{{ selected_batch.name }}</span>
+      <span class="sheet-meta">{{ dates|length }} class{{ dates|length|pluralize:"es" }} held</span>
+      {% if class_average is not None %}<span class="sheet-meta">Class average {{ class_average }}%</span>{% endif %}
+    </div>
+
+    {% if dates %}
+      <div class="sheet-wrap">
+        <table class="sheet-table">
+          <thead>
+            <tr>
+              <th class="sticky-roll">Roll</th>
+              <th class="sticky-name">Student</th>
+              {% for d in dates %}<th title="{{ d|date:'l, d F Y' }}">{{ d|date:"d M" }}</th>{% endfor %}
+              <th class="pct-col">Present</th>
+              <th class="pct-col">Percentage</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in rows %}
+              <tr>
+                <td class="sticky-roll">{{ r.student.roll|default:"-" }}</td>
+                <td class="sticky-name">{{ r.student.first_name }}<small>{{ r.student.username }}</small></td>
+                {% for s in r.statuses %}
+                  <td>
+                    {% if s == "P" %}<span class="mark mark-p">P</span>
+                    {% elif s == "A" %}<span class="mark mark-a">A</span>
+                    {% else %}<span class="mark mark-none">-</span>{% endif %}
+                  </td>
+                {% endfor %}
+                <td class="pct-col">{{ r.present }} / {{ r.total }}</td>
+                <td class="pct-col">
+                  <span class="pct-badge {% if r.percentage >= 75 %}pct-high{% elif r.percentage >= 60 %}pct-mid{% else %}pct-low{% endif %}">{{ r.percentage }}%</span>
+                </td>
+              </tr>
+            {% empty %}
+              <tr><td colspan="{{ dates|length|add:4 }}" class="text-muted">No students in this batch yet.</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="text-muted">No attendance has been taken yet for this course.</p>
+    {% endif %}
+  {% elif not selected_batch %}
+    <p class="text-muted mt-3">Select a batch and course to see the attendance sheet.</p>
+  {% endif %}
+
+  <script>
+    document.getElementById('sheet-batch').addEventListener('change', function () {
+      window.location.href = this.value ? '?batch=' + this.value : '/teacher-dashboard/attendance/sheet/';
+    });
+    document.getElementById('sheet-course').addEventListener('change', function () {
+      var batch = document.getElementById('sheet-batch').value;
+      if (this.value) { window.location.href = '?batch=' + batch + '&course=' + this.value; }
+    });
+  </script>
+{% endblock %}

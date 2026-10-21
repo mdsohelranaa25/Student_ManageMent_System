@@ -13,21 +13,22 @@
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container">
       <a class="navbar-brand" href="/">Student <span class="brand-accent">Management</span> System</a>
-      <div>
-             {% if user.is_authenticated %}
+      <div class="nav-actions">
+        {% if user.is_authenticated %}
           {% if user.role == "admin" %}
-            <a href="/accounts/applications/" class="btn btn-outline-light btn-sm me-2">Applications</a>
-            <a href="/academics/exam-routine/create/" class="btn btn-outline-light btn-sm me-2">Exam Routine</a>
-            <a href="/academics/result/post/" class="btn btn-outline-light btn-sm me-2">Post Result</a>
-            <a href="/admin/" class="btn btn-outline-light btn-sm me-2">Django Admin</a>
+            <a href="/admin-dashboard/" class="btn btn-outline-light btn-sm">Dashboard</a>
+          {% elif user.role == "teacher" %}
+            <a href="/teacher-dashboard/" class="btn btn-outline-light btn-sm">Dashboard</a>
+          {% else %}
+            <a href="/student-dashboard/" class="btn btn-outline-light btn-sm">Dashboard</a>
           {% endif %}
-          <span class="text-light me-3">{{ user.username }} ({{ user.role }})</span>
+          <span class="nav-user">{{ user.username }} <small>{{ user.get_role_display }}</small></span>
           <form method="post" action="/accounts/logout/" class="d-inline">
             {% csrf_token %}
             <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
           </form>
         {% else %}
-          <a href="/accounts/login/" class="btn btn-outline-light btn-sm me-2">Login</a>
+          <a href="/accounts/login/" class="btn btn-outline-light btn-sm">Login</a>
           <a href="/accounts/apply/" class="btn btn-light btn-sm">Apply</a>
         {% endif %}
       </div>

@@ -20,7 +20,13 @@ from .utils import generate_password, generate_reset_code, generate_student_user
 
 
 def home(request):
-    return render(request, "home.html")
+    stats = {
+        "students": User.objects.filter(role="student").count(),
+        "teachers": User.objects.filter(role="teacher").count(),
+        "courses": Course.objects.count(),
+        "batches": Batch.objects.filter(is_running=True).count(),
+    }
+    return render(request, "home.html", {"stats": stats})
 
 
 def apply_choice(request):

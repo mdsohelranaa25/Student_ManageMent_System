@@ -1,25 +1,95 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+{% load static %}
+{% block title %}Institute of Information Technology - Jahangirnagar University{% endblock %}
 
 {% block content %}
-  <div class="hero text-center my-4">
-    <div class="eyebrow">Department Portal</div>
-    <h1 class="mb-3">Student Management System</h1>
-    <p class="mb-4">
-      A single place for attendance, class routine, results, and academic records —
-      for students, teachers, and department administration.
-    </p>
+  <section class="home-hero">
+    <div class="home-hero-bg"></div>
 
-    <a href="/accounts/login/" class="btn btn-primary btn-lg me-3">Login</a>
-
-    <div class="dropdown d-inline-block">
-      <button class="btn btn-outline-light btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-        Apply
-      </button>
-      <ul class="dropdown-menu dropdown-menu-end apply-dropdown">
-        <li><a class="dropdown-item" href="/accounts/apply/student/">Student</a></li>
-        <li><a class="dropdown-item" href="/accounts/apply/teacher/">Teacher</a></li>
-      </ul>
+    <div class="home-hero-text">
+      <div class="home-eyebrow">Official Department Portal</div>
+      <h1>Institute of Information Technology</h1>
+      <div class="home-university">Jahangirnagar University</div>
+      <p>One secure place for class routines, exam schedules, attendance, notices and results, built for students, teachers and department administration.</p>
+      <div class="home-cta">
+        <a href="/accounts/login/" class="btn btn-primary btn-lg">Login to Portal</a>
+        <div class="dropdown d-inline-block">
+          <button class="btn btn-outline-light btn-lg dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Apply</button>
+          <ul class="dropdown-menu apply-dropdown">
+            <li><a class="dropdown-item" href="/accounts/apply/student/">Apply as Student</a></li>
+            <li><a class="dropdown-item" href="/accounts/apply/teacher/">Apply as Teacher</a></li>
+          </ul>
+        </div>
+      </div>
     </div>
-  </div>
+
+    <div class="home-logo-card">
+      <img src="{% static 'images/iit-logo.png' %}" alt="Institute of Information Technology, Jahangirnagar University">
+    </div>
+  </section>
+
+  <section class="home-stats">
+    <div class="home-stat"><span class="home-stat-value">{{ stats.students }}</span><span class="home-stat-label">Students</span></div>
+    <div class="home-stat"><span class="home-stat-value">{{ stats.teachers }}</span><span class="home-stat-label">Teachers</span></div>
+    <div class="home-stat"><span class="home-stat-value">{{ stats.courses }}</span><span class="home-stat-label">Courses</span></div>
+    <div class="home-stat"><span class="home-stat-value">{{ stats.batches }}</span><span class="home-stat-label">Running Batches</span></div>
+  </section>
+
+  <section class="home-section">
+    <div class="home-section-eyebrow">What the portal offers</div>
+    <h2 class="home-section-title">Built for everyone in the department</h2>
+
+    <div class="home-cards">
+      <div class="home-card">
+        <div class="home-card-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+        <h4>For Students</h4>
+        <ul>
+          <li>Weekly class routine and upcoming exams</li>
+          <li>Attendance record with percentage</li>
+          <li>Notice board with course announcements</li>
+          <li>Semester results and CGPA</li>
+        </ul>
+      </div>
+      <div class="home-card">
+        <div class="home-card-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <h4>For Teachers</h4>
+        <ul>
+          <li>Quick P/A attendance and full attendance sheets</li>
+          <li>Announcements with images and files</li>
+          <li>Exam scheduling with room availability</li>
+          <li>Routine view for every running batch</li>
+        </ul>
+      </div>
+      <div class="home-card">
+        <div class="home-card-icon"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l9 5-9 5-9-5 9-5zM3 12l9 5 9-5M3 17l9 5 9-5"/></svg></div>
+        <h4>For Administration</h4>
+        <ul>
+          <li>Review and approve applications</li>
+          <li>Conflict-free class routines</li>
+          <li>Publish semester results</li>
+          <li>Manage batches, courses and accounts</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="home-section">
+    <div class="home-section-eyebrow">Getting started</div>
+    <h2 class="home-section-title">From application to dashboard in four steps</h2>
+
+    <div class="home-steps">
+      <div class="home-step"><div class="home-step-no">1</div><h5>Apply online</h5><p>Submit your name, batch, Gmail and phone number.</p></div>
+      <div class="home-step"><div class="home-step-no">2</div><h5>Admin review</h5><p>The department admin verifies your application.</p></div>
+      <div class="home-step"><div class="home-step-no">3</div><h5>Get your credentials</h5><p>A unique ID and password arrive in your Gmail.</p></div>
+      <div class="home-step"><div class="home-step-no">4</div><h5>Log in</h5><p>Open your dashboard and get started.</p></div>
+    </div>
+  </section>
+
+  <footer class="home-footer">
+    <div>
+      <div class="home-footer-title">Institute of Information Technology</div>
+      <div class="home-footer-sub">Jahangirnagar University, Savar, Dhaka-1342</div>
+    </div>
+    <div class="home-footer-copy">&copy; {% now "Y" %} IIT, Jahangirnagar University. All rights reserved.</div>
+  </footer>
 {% endblock %}
