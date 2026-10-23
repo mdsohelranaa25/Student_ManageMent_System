@@ -5,38 +5,39 @@
     <aside class="dash-sidebar">
       <div class="dash-user-card">
         {% if user.profile_picture %}
-          <img src="{{ user.profile_picture.url }}" class="dash-user-avatar" alt="">
+          <img src="{{ user.profile_picture.url }}" class="dash-user-avatar" alt="Faculty Avatar">
         {% else %}
           <div class="dash-user-avatar dash-user-avatar-placeholder">{{ user.first_name|first|upper }}</div>
         {% endif %}
         <div class="dash-user-name">{{ user.first_name }}</div>
-        <div class="dash-user-role">{{ user.get_role_display }}</div>
+        <div class="dash-user-role">Faculty Member</div>
+        <div class="mt-2"><span class="chip chip-rust">Teacher</span></div>
       </div>
 
       <nav>
         <a href="/teacher-dashboard/" class="dash-link {% if active == 'home' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v10h12V10"/></svg>
-          <span>Home</span>
+          <span>Dashboard Home</span>
         </a>
         <a href="/teacher-dashboard/profile/" class="dash-link {% if active == 'profile' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-          <span>Profile</span>
+          <span>Faculty Profile</span>
         </a>
         <a href="/teacher-dashboard/attendance/" class="dash-link {% if active == 'attendance' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
-          <span>Attendance</span>
+          <span>Take Attendance</span>
         </a>
         <a href="/teacher-dashboard/announcement/" class="dash-link {% if active == 'announcement' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>
-          <span>Announcement</span>
+          <span>Announcements</span>
         </a>
         <a href="/teacher-dashboard/routine/" class="dash-link {% if active == 'routine' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-          <span>Routine</span>
+          <span>Class Routine</span>
         </a>
         <a href="/academics/exam-routine/create/" class="dash-link">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          <span>Create Exam Routine</span>
+          <span>Schedule Exam</span>
         </a>
         <a href="/teacher-dashboard/change-password/" class="dash-link {% if active == 'password' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
@@ -44,6 +45,7 @@
         </a>
       </nav>
     </aside>
+
     <main class="dash-content">
       {% block dash_content %}{% endblock %}
     </main>

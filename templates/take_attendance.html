@@ -1,41 +1,68 @@
 {% extends "teacher_dashboard_section_base.html" %}
-{% block title %}Take Attendance{% endblock %}
+{% block title %}Take Attendance · Faculty Portal · IIT JU{% endblock %}
 
 {% block section_content %}
-  <div class="eyebrow">Attendance</div>
-  <h2 class="mb-4">Take Attendance</h2>
+  <div class="eyebrow">Academic Attendance</div>
+  <h1 class="mb-3">Take Class Attendance</h1>
+
   <div class="seg-control">
-    <a href="/teacher-dashboard/attendance/" class="seg-btn active">Take Attendance</a>
-    <a href="/teacher-dashboard/attendance/sheet/" class="seg-btn">View Sheet</a>
+    <a href="/teacher-dashboard/attendance/" class="seg-btn active">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+      <span>Take Attendance</span>
+    </a>
+    <a href="/teacher-dashboard/attendance/sheet/" class="seg-btn">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+      <span>View Attendance Sheet</span>
+    </a>
   </div>
 
   <div class="routine-card">
     <div class="routine-grid">
       <div class="mb-3">
-        <label class="form-label">Batch</label>
+        <label class="form-label" for="id_batch">Batch</label>
         <select id="id_batch" class="form-select">
           <option value="">Select batch</option>
-          {% for b in batches %}<option value="{{ b.id }}">{{ b.name }} (Sem {{ b.current_semester }})</option>{% endfor %}
+          {% for b in batches %}
+            <option value="{{ b.id }}">{{ b.name }} (Semester {{ b.current_semester }})</option>
+          {% endfor %}
         </select>
       </div>
+
       <div class="mb-3">
-        <label class="form-label">Course</label>
-        <select id="id_course" class="form-select" disabled><option value="">Select batch first</option></select>
+        <label class="form-label" for="id_course">Course</label>
+        <select id="id_course" class="form-select" disabled>
+          <option value="">Select batch first</option>
+        </select>
       </div>
+
       <div class="mb-3">
-        <label class="form-label">Date</label>
+        <label class="form-label" for="id_date">Date of Session</label>
         <input type="date" id="id_date" class="form-control">
       </div>
     </div>
 
-    <div id="student-list-wrap" style="display:none;">
+    <div id="student-list-wrap" style="display:none;" class="mt-4">
       <div class="attendance-toolbar">
-        <button type="button" class="btn btn-outline-primary btn-sm" id="mark-all-present">Mark All Present</button>
-        <span class="attendance-count" id="attendance-count"></span>
+        <div>
+          <button type="button" class="btn btn-outline-primary btn-sm" id="mark-all-present">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+            <span>Mark All Present</span>
+          </button>
+        </div>
+        <span class="attendance-count" id="attendance-count">0 / 0 present</span>
       </div>
+
       <div id="student-list" class="student-list"></div>
-      <button type="button" class="btn btn-primary mt-3" id="save-btn">Save Attendance</button>
-      <div id="save-msg" class="mt-2"></div>
+
+      <div class="d-flex align-items-center gap-3 mt-4">
+        <button type="button" class="btn btn-primary" id="save-btn">
+          <span>Save Attendance</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg>
+        </button>
+        <span class="text-muted small">Records are immediately synchronized.</span>
+      </div>
+
+      <div id="save-msg" class="mt-3"></div>
     </div>
   </div>
 
@@ -83,11 +110,11 @@
             row.dataset.studentId = s.id;
             row.dataset.status = s.status;
             row.innerHTML = `
-              <span class="student-roll">${s.roll || '-'}</span>
+              <span class="student-roll">Roll ${s.roll || '-'}</span>
               <span class="student-name">${s.name} <small class="text-muted">(${s.username})</small></span>
               <span class="status-toggle">
-                <button type="button" class="status-btn status-p ${s.status === 'P' ? 'active' : ''}">P</button>
-                <button type="button" class="status-btn status-a ${s.status === 'A' ? 'active' : ''}">A</button>
+                <button type="button" class="status-btn status-p ${s.status === 'P' ? 'active' : ''}" title="Mark Present">P</button>
+                <button type="button" class="status-btn status-a ${s.status === 'A' ? 'active' : ''}" title="Mark Absent">A</button>
               </span>`;
             studentList.appendChild(row);
           });
@@ -138,7 +165,7 @@
       fetch('/teacher-dashboard/attendance/save/', { method: 'POST', body: formData })
         .then(res => res.json())
         .then(data => {
-          saveMsg.innerHTML = `<div class="alert alert-info">${data.message}</div>`;
+          saveMsg.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
         });
     });
   </script>

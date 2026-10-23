@@ -1,35 +1,65 @@
 {% extends "dashboard_base.html" %}
-{% block title %}Dashboard{% endblock %}
+{% block title %}Student Dashboard · IIT JU{% endblock %}
 
 {% block dash_content %}
-  <div class="eyebrow">Welcome back</div>
-  <h2 class="mb-4">{{ user.first_name }}</h2>
+  <div class="d-flex align-items-baseline justify-content-between flex-wrap gap-2 mb-4">
+    <div>
+      <div class="eyebrow">Academic Portal</div>
+      <h1 class="mb-1" style="font-size: 2.2rem;">Welcome back, {{ user.first_name }}</h1>
+      <p class="text-muted mb-0">Institute of Information Technology, Jahangirnagar University.</p>
+    </div>
+    {% if user.batch %}
+      <span class="chip chip-rust px-3 py-2 fs-6">Batch {{ user.batch }} &middot; Roll {{ user.roll|default:"—" }}</span>
+    {% endif %}
+  </div>
 
   <div class="tile-grid">
-    <a href="/student-dashboard/profile/" class="tile-card">
-      <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg></div>
-      <div class="tile-title">Profile</div>
-      <div class="tile-desc">View and update your photo and info</div>
-    </a>
     <a href="/student-dashboard/routine/" class="tile-card">
-      <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
-      <div class="tile-title">Routine</div>
-      <div class="tile-desc">Class routine and upcoming exams</div>
+      <div class="tile-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      </div>
+      <div class="tile-title">Class Routine</div>
+      <div class="tile-desc">View your recurring weekly class schedule and upcoming tutorial exam dates.</div>
     </a>
+
     <a href="/student-dashboard/attendance/" class="tile-card">
-      <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg></div>
-      <div class="tile-title">Attendance</div>
-      <div class="tile-desc">Your present/absent record</div>
+      <div class="tile-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+      </div>
+      <div class="tile-title">Attendance Record</div>
+      <div class="tile-desc">Monitor course-wise present and absent statistics and your real-time attendance rate.</div>
     </a>
+
+    <a href="/student-dashboard/notice/" class="tile-card">
+      <div class="tile-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>
+      </div>
+      <div class="tile-title">Notice Board</div>
+      <div class="tile-desc">Direct announcements from course teachers, attachments, and batch discussions.</div>
+    </a>
+
     <a href="/student-dashboard/results/" class="tile-card">
-      <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg></div>
-      <div class="tile-title">Results</div>
-      <div class="tile-desc">Semester results and CGPA</div>
+      <div class="tile-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+      </div>
+      <div class="tile-title">Academic Results</div>
+      <div class="tile-desc">Published semester GPA, cumulative CGPA, and course grade breakdowns.</div>
     </a>
+
+    <a href="/student-dashboard/profile/" class="tile-card">
+      <div class="tile-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+      </div>
+      <div class="tile-title">My Profile</div>
+      <div class="tile-desc">Verify your academic enrollment records, roll number, and upload a profile photo.</div>
+    </a>
+
     <a href="/student-dashboard/change-password/" class="tile-card">
-      <div class="tile-icon"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg></div>
-      <div class="tile-title">Change Password</div>
-      <div class="tile-desc">Update your login password</div>
+      <div class="tile-icon">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
+      </div>
+      <div class="tile-title">Security &amp; Password</div>
+      <div class="tile-desc">Update your secret password and manage account credential protection.</div>
     </a>
   </div>
 {% endblock %}

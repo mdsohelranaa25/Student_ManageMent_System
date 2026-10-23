@@ -1,29 +1,36 @@
 {% extends "dashboard_section_base.html" %}
-{% block title %}Routine{% endblock %}
+{% block title %}Class Routine · Student Portal · IIT JU{% endblock %}
 
 {% block section_content %}
-  <div class="eyebrow">Class Routine</div>
-  <h2 class="mb-3">
-    {% if view_mode == "combined" %}All Running Batches{% elif selected_batch %}{{ selected_batch.name }}{% else %}No batch set{% endif %}
-  </h2>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <div class="eyebrow">Academic Schedule</div>
+      <h1 class="mb-1" style="font-size: 2.2rem;">
+        {% if view_mode == "combined" %}Combined Routine (All Running Batches){% elif selected_batch %}Batch {{ selected_batch.name }} Schedule{% else %}Class Routine{% endif %}
+      </h1>
+      <p class="text-muted mb-0">Weekly recurring class lectures and examination timetables.</p>
+    </div>
 
-  <div class="select-wrap">
-    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-    <select id="view-select" class="premium-select" onchange="window.location.href='?view='+this.value">
-      <option value="mine" {% if view_mode == "mine" %}selected{% endif %}>My Batch</option>
-      <option value="combined" {% if view_mode == "combined" %}selected{% endif %}>Combined (All Running Batches)</option>
-      {% for b in all_batches %}
-        <option value="{{ b.id }}" {% if view_mode == b.id|stringformat:"s" %}selected{% endif %}>{{ b.name }}</option>
-      {% endfor %}
-    </select>
+    <div class="select-wrap">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      <select id="view-select" class="premium-select" onchange="window.location.href='?view='+this.value">
+        <option value="mine" {% if view_mode == "mine" %}selected{% endif %}>My Batch ({% if user.batch %}{{ user.batch }}{% else %}Default{% endif %})</option>
+        <option value="combined" {% if view_mode == "combined" %}selected{% endif %}>Combined (All Running Batches)</option>
+        {% for b in all_batches %}
+          <option value="{{ b.id }}" {% if view_mode == b.id|stringformat:"s" %}selected{% endif %}>Batch {{ b.name }} (Sem {{ b.current_semester }})</option>
+        {% endfor %}
+      </select>
+    </div>
   </div>
 
   <div class="routine-table-wrap">
     <table class="routine-grid-table">
       <thead>
         <tr>
-          <th class="day-col">Day</th>
-          {% for ts in time_slots %}<th>{{ ts.label }}</th>{% endfor %}
+          <th class="day-col">Day / Period</th>
+          {% for ts in time_slots %}
+            <th>{{ ts.label }}</th>
+          {% endfor %}
         </tr>
       </thead>
       <tbody>
@@ -34,10 +41,14 @@
               <td>
                 {% for r in cell %}
                   <div class="routine-cell-entry">
-                    {% if view_mode == "combined" %}<div class="cell-batch">{{ r.batch }}</div>{% endif %}
+                    {% if view_mode == "combined" %}
+                      <div class="cell-batch">{{ r.batch }}</div>
+                    {% endif %}
                     <div class="cell-course">{{ r.course.code }}</div>
-                    <div class="cell-room">{{ r.room }}</div>
+                    <div class="cell-room">Room {{ r.room }}</div>
                   </div>
+                {% empty %}
+                  <div class="text-muted small text-center opacity-25">&mdash;</div>
                 {% endfor %}
               </td>
             {% endfor %}
@@ -48,16 +59,21 @@
   </div>
 
   {% if upcoming_exams %}
-    <h4 class="mt-5 mb-3">Upcoming Exams</h4>
-    <div class="entry-list">
-      {% for e in upcoming_exams %}
-        <div class="entry-row exam-row">
-          <span class="entry-date">{{ e.date }}</span>
-          <span class="entry-time">{{ e.time_slot }}</span>
-          <span class="entry-course">{{ e.course.code }} - {{ e.course.title }}</span>
-          <span class="entry-room">{{ e.room }}</span>
-        </div>
-      {% endfor %}
+    <div class="mt-5">
+      <div class="d-flex align-items-center gap-2 mb-3">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="text-danger"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <h3 class="mb-0">Upcoming Tutorial Exams</h3>
+      </div>
+      <div class="entry-list">
+        {% for e in upcoming_exams %}
+          <div class="entry-row exam-row">
+            <span class="entry-date">{{ e.date|date:"l, d M Y" }}</span>
+            <span class="entry-time">{{ e.time_slot }}</span>
+            <span class="entry-course">{{ e.course.code }} &mdash; {{ e.course.title }}</span>
+            <span class="entry-room">Room {{ e.room }}</span>
+          </div>
+        {% endfor %}
+      </div>
     </div>
   {% endif %}
 {% endblock %}

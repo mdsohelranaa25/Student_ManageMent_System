@@ -1,27 +1,40 @@
 {% extends "base.html" %}
-{% block title %}Create Routine{% endblock %}
+{% block title %}Class Routine Builder · Admin · IIT JU{% endblock %}
 
 {% block content %}
-  <div class="routine-heading">
-    <div class="eyebrow">Admin</div>
-    <h2 class="mb-4">Create Class Routine</h2>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <div class="eyebrow">Academic Operations</div>
+      <h1 class="mb-1" style="font-size: 2.2rem;">Create Class Routine</h1>
+      <p class="text-muted mb-0">Build weekly recurring class schedules with automated room occupancy checking.</p>
+    </div>
+    <a href="/admin-dashboard/" class="btn btn-outline-primary btn-sm">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Back to Admin Center</span>
+    </a>
   </div>
 
   <div class="routine-card">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="text-accent"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+      <h3 class="mb-0">Session Details</h3>
+    </div>
+
     <form method="post" id="routine-form">
       {% csrf_token %}
       <div class="routine-grid">
         <div class="mb-3">
-          <label class="form-label">Batch</label>
+          <label class="form-label" for="id_batch">Batch</label>
           <select name="batch" id="id_batch" class="form-select" required>
             <option value="">Select batch</option>
             {% for b in batches %}
-              <option value="{{ b.id }}">{{ b.name }} (Semester {{ b.current_semester }})</option>
+              <option value="{{ b.id }}">Batch {{ b.name }} (Semester {{ b.current_semester }})</option>
             {% endfor %}
           </select>
         </div>
+
         <div class="mb-3">
-          <label class="form-label">Day</label>
+          <label class="form-label" for="id_day">Day of Week</label>
           <select name="day" id="id_day" class="form-select" required>
             <option value="">Select day</option>
             {% for value, label in days %}
@@ -29,8 +42,9 @@
             {% endfor %}
           </select>
         </div>
+
         <div class="mb-3">
-          <label class="form-label">Time Slot</label>
+          <label class="form-label" for="id_time_slot">Time Period</label>
           <select name="time_slot" id="id_time_slot" class="form-select" required>
             <option value="">Select time slot</option>
             {% for ts in time_slots %}
@@ -38,8 +52,9 @@
             {% endfor %}
           </select>
         </div>
+
         <div class="mb-3">
-          <label class="form-label">Course</label>
+          <label class="form-label" for="id_course">Course Unit</label>
           <select name="course" id="id_course" class="form-select" required disabled>
             <option value="">Select batch first</option>
           </select>
@@ -47,30 +62,36 @@
       </div>
 
       <div id="batch-warning" class="alert alert-danger" style="display:none;">
-        This batch already has a class scheduled in this slot.
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+        <span><strong>Schedule Conflict:</strong> This batch already has a class scheduled during this time slot.</span>
       </div>
 
-      <label class="form-label">Room</label>
-      <div class="room-grid" id="room-grid">
-        <p class="text-muted small">Select day and time slot to see room availability.</p>
+      <div class="mt-2 mb-2">
+        <label class="form-label">Available Room Allocation</label>
+        <div class="room-grid" id="room-grid">
+          <p class="text-muted small">Select a day and time slot above to inspect live room availability.</p>
+        </div>
+        <input type="hidden" name="room" id="id_room">
       </div>
-      <input type="hidden" name="room" id="id_room">
 
-      <button type="submit" class="btn btn-primary mt-3" id="submit-btn" disabled>Add to Routine</button>
+      <button type="submit" class="btn btn-primary mt-2" id="submit-btn" disabled>
+        <span>Add to Master Routine</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </form>
   </div>
 
-  <h4 class="mt-5 mb-3">Existing Routine Entries</h4>
+  <h3 class="mt-5 mb-3">Existing Master Routine Entries</h3>
   <div class="entry-list">
     {% for r in existing %}
       <div class="entry-row">
         <span class="entry-date">{{ r.batch }}</span>
         <span class="entry-time">{{ r.get_day_display }} &middot; {{ r.time_slot }}</span>
-        <span class="entry-course">{{ r.course.code }} - {{ r.course.title }}</span>
-        <span class="entry-room">{{ r.room }}</span>
+        <span class="entry-course">{{ r.course.code }} &mdash; {{ r.course.title }}</span>
+        <span class="entry-room">Room {{ r.room }}</span>
       </div>
     {% empty %}
-      <p class="text-muted">No routine entries yet.</p>
+      <div class="alert alert-info">No routine entries have been added to the master schedule yet.</div>
     {% endfor %}
   </div>
 
@@ -105,7 +126,7 @@
           });
           courseSelect.disabled = false;
 
-          batchWarning.style.display = data.batch_slot_taken ? 'block' : 'none';
+          batchWarning.style.display = data.batch_slot_taken ? 'flex' : 'none';
 
           roomInput.value = '';
           submitBtn.disabled = true;

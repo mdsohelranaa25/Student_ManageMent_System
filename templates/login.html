@@ -1,25 +1,30 @@
 {% extends "base.html" %}
-{% block title %}Login{% endblock %}
+{% block title %}Sign In · IIT JU Department Portal{% endblock %}
 
 {% block content %}
   <div class="login-wrap my-4">
     <div class="login-panel">
-      <div class="login-monogram">S</div>
+      <div class="login-monogram">IIT</div>
       <div class="login-panel-content">
-        <div class="eyebrow">Department Portal</div>
-        <h1>Welcome<br>Back</h1>
-        <p>Access your courses, attendance, routine, and results — all in one place.</p>
+        <div class="eyebrow" style="color:var(--accent-soft);">Official Department Access</div>
+        <h1>Institute of<br>Information<br>Technology</h1>
+        <p>Jahangirnagar University's centralized gateway for attendance, routines, semester transcripts, and department notices.</p>
+        <div class="d-flex align-items-center gap-2 pt-3" style="color:rgba(247,245,239,0.65);font-size:0.8rem;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>SSL 256-bit Encrypted Academic Gateway</span>
+        </div>
       </div>
     </div>
 
     <div class="login-form-side">
       <div class="login-form-card">
         <h3 class="mb-1">Sign in</h3>
-        <p class="text-muted small mb-4">Use the ID and password emailed to you.</p>
+        <p class="text-muted small mb-4">Enter your institutional ID and password.</p>
 
         {% if form.errors %}
-          <div class="alert alert-danger">
-            Incorrect username or password. Please try again.
+          <div class="alert alert-danger py-2 mb-3">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+            <span>Invalid credentials. Please verify your ID &amp; password.</span>
           </div>
         {% endif %}
 
@@ -27,20 +32,29 @@
           {% csrf_token %}
 
           <div class="mb-3">
-            <label class="form-label">Username</label>
+            <label class="form-label">Username or Login ID</label>
             {{ form.username }}
           </div>
 
           <div class="mb-3">
-            <label class="form-label">Password</label>
-            {{ form.password }}
+            <div class="d-flex justify-content-between align-items-center">
+              <label class="form-label mb-0">Password</label>
+              <a href="/accounts/forgot-password/" class="small text-muted text-decoration-none">Forgot?</a>
+            </div>
+            <div class="mt-1">
+              {{ form.password }}
+            </div>
           </div>
 
-          <button type="submit" class="btn btn-primary w-100 mt-3">Login</button>
+          <button type="submit" class="btn btn-primary w-100 mt-4 py-2">
+            <span>Sign into Portal</span>
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+          </button>
         </form>
 
-        <div class="text-center mt-3">
-          <a href="/accounts/forgot-password/" class="text-decoration-none small">Forgot password?</a>
+        <div class="text-center mt-4 pt-2 border-top">
+          <p class="text-muted small mb-1">Don't have an approved account yet?</p>
+          <a href="/accounts/apply/" class="fw-bold small">Submit an application &rarr;</a>
         </div>
       </div>
     </div>

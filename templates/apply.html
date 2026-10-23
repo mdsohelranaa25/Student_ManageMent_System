@@ -1,35 +1,60 @@
 {% extends "base.html" %}
-{% block title %}Apply as {{ role }}{% endblock %}
+{% block title %}Apply as {{ role }} · IIT JU Portal{% endblock %}
 
 {% block content %}
   <div class="apply-wrap my-4">
     <div class="apply-panel">
-      <div class="eyebrow">Membership Application</div>
-      <h2>Apply as {{ role }}</h2>
-      <p>Fill in your details and submit. Here's what happens next:</p>
-      <ol class="apply-steps">
-        <li>Your application goes to the department admin.</li>
-        <li>The admin reviews and approves it.</li>
-        <li>A login ID and password are emailed to your Gmail automatically.</li>
-        <li>You log in and can change your password anytime.</li>
-      </ol>
+      <div class="apply-panel-content">
+        <div class="eyebrow">Portal Membership</div>
+        <h2>Apply as {{ role }}</h2>
+        <p>Complete this formal request to obtain your authenticated credentials for the IIT Jahangirnagar University portal.</p>
+        
+        <div class="mt-4">
+          <div class="eyebrow mb-2" style="color:var(--accent-soft);">Next Steps</div>
+          <ol class="apply-steps">
+            <li>Your application is routed to the institute admin queue.</li>
+            <li>Verification takes place against institute enrollment records.</li>
+            <li>Upon approval, a unique login ID &amp; password are emailed to you.</li>
+            <li>You can immediately log in and change your password.</li>
+          </ol>
+        </div>
+      </div>
     </div>
 
     <div class="apply-form-side">
       <form method="post">
         {% csrf_token %}
 
+        <h3 class="mb-1" style="font-size: 1.5rem;">Applicant Details</h3>
+        <p class="text-muted small mb-4">All fields are verified by administration.</p>
+
+        {% if form.non_field_errors %}
+          <div class="alert alert-danger py-2 mb-3">
+            {{ form.non_field_errors.0 }}
+          </div>
+        {% endif %}
+
         {% for field in form %}
           <div class="mb-3">
-            <label class="form-label">{{ field.label }}</label>
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
             {{ field }}
+            {% if field.help_text %}
+              <div class="text-muted small mt-1">{{ field.help_text }}</div>
+            {% endif %}
             {% if field.errors %}
-              <div class="text-danger small mt-1">{{ field.errors.0 }}</div>
+              <div class="text-danger small mt-1 fw-bold">{{ field.errors.0 }}</div>
             {% endif %}
           </div>
         {% endfor %}
 
-        <button type="submit" class="btn btn-primary w-100 mt-2">Submit Application</button>
+        <button type="submit" class="btn btn-primary w-100 mt-3 py-2">
+          <span>Submit Application</span>
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+
+        <div class="text-center mt-3">
+          <a href="/accounts/apply/" class="text-muted small text-decoration-none">&larr; Choose different role</a>
+        </div>
       </form>
     </div>
   </div>

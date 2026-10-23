@@ -1,18 +1,37 @@
 {% extends "base.html" %}
-{% block title %}Create Exam Routine{% endblock %}
+{% block title %}Schedule Examination · Admin · IIT JU{% endblock %}
 
 {% block content %}
-  <div class="routine-heading">
-    <div class="eyebrow">Admin</div>
-    <h2 class="mb-4">Schedule an Exam</h2>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <div class="eyebrow">Academic Operations</div>
+      <h1 class="mb-1" style="font-size: 2.2rem;">Schedule Semester Examination</h1>
+      <p class="text-muted mb-0">Assign date, period, and room allocation for course examinations.</p>
+    </div>
+    {% if user.role == "admin" %}
+      <a href="/admin-dashboard/" class="btn btn-outline-primary btn-sm">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Back to Admin Center</span>
+      </a>
+    {% else %}
+      <a href="/teacher-dashboard/" class="btn btn-outline-primary btn-sm">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span>Back to Faculty Dashboard</span>
+      </a>
+    {% endif %}
   </div>
 
   <div class="routine-card">
+    <div class="d-flex align-items-center gap-2 mb-3">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="text-accent"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      <h3 class="mb-0">Exam Booking Information</h3>
+    </div>
+
     <form method="post" id="exam-form">
       {% csrf_token %}
       <div class="routine-grid">
         <div class="mb-3">
-          <label class="form-label">Semester</label>
+          <label class="form-label" for="id_semester">Semester</label>
           <select id="id_semester" class="form-select" required>
             <option value="">Select semester</option>
             {% for s in semesters %}
@@ -20,18 +39,21 @@
             {% endfor %}
           </select>
         </div>
+
         <div class="mb-3">
-          <label class="form-label">Course</label>
+          <label class="form-label" for="id_course">Course Unit</label>
           <select name="course" id="id_course" class="form-select" required disabled>
             <option value="">Select semester first</option>
           </select>
         </div>
+
         <div class="mb-3">
-          <label class="form-label">Date</label>
+          <label class="form-label" for="id_date">Examination Date</label>
           <input type="date" name="date" id="id_date" class="form-control" required>
         </div>
+
         <div class="mb-3">
-          <label class="form-label">Time Slot</label>
+          <label class="form-label" for="id_time_slot">Examination Slot</label>
           <select name="time_slot" id="id_time_slot" class="form-select" required>
             <option value="">Select time slot</option>
             {% for ts in time_slots %}
@@ -41,27 +63,32 @@
         </div>
       </div>
 
-      <label class="form-label">Room</label>
-      <div class="room-grid" id="room-grid">
-        <p class="text-muted small">Select date and time slot to see room availability.</p>
+      <div class="mt-2 mb-2">
+        <label class="form-label">Available Exam Hall / Room</label>
+        <div class="room-grid" id="room-grid">
+          <p class="text-muted small">Select an examination date and time slot above to inspect room availability.</p>
+        </div>
+        <input type="hidden" name="room" id="id_room">
       </div>
-      <input type="hidden" name="room" id="id_room">
 
-      <button type="submit" class="btn btn-primary mt-3" id="submit-btn" disabled>Add Exam</button>
+      <button type="submit" class="btn btn-primary mt-2" id="submit-btn" disabled>
+        <span>Confirm Exam Schedule</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+      </button>
     </form>
   </div>
 
-    <h4 class="mt-5 mb-3">Upcoming Exams</h4>
+  <h3 class="mt-5 mb-3">Scheduled Upcoming Examinations</h3>
   <div class="entry-list">
     {% for e in existing %}
       <div class="entry-row exam-row">
-        <span class="entry-date">{{ e.date }}</span>
+        <span class="entry-date">{{ e.date|date:"l, d M Y" }}</span>
         <span class="entry-time">{{ e.time_slot }}</span>
-        <span class="entry-course">{{ e.course.code }} - {{ e.course.title }}</span>
-        <span class="entry-room">{{ e.room }}</span>
+        <span class="entry-course">{{ e.course.code }} &mdash; {{ e.course.title }}</span>
+        <span class="entry-room">Room {{ e.room }}</span>
       </div>
     {% empty %}
-      <p class="text-muted">No exams scheduled yet.</p>
+      <div class="alert alert-info">No examinations have been scheduled yet.</div>
     {% endfor %}
   </div>
 

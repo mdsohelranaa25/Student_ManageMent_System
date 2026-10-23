@@ -1,10 +1,17 @@
 {% extends "base.html" %}
-{% block title %}Applications{% endblock %}
+{% block title %}Membership Applications · Admin · IIT JU{% endblock %}
 
 {% block content %}
-  <div class="apps-heading">
-    <div class="eyebrow">Admin</div>
-    <h2 class="mb-4">Pending Applications</h2>
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <div class="eyebrow">Institute Administration</div>
+      <h1 class="mb-1" style="font-size: 2.2rem;">Pending Applications</h1>
+      <p class="text-muted mb-0">Review student and faculty applicants. Approving automatically generates and emails credentials.</p>
+    </div>
+    <a href="/admin-dashboard/" class="btn btn-outline-primary btn-sm">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Back to Admin Center</span>
+    </a>
   </div>
 
   {% if applications %}
@@ -12,28 +19,50 @@
       {% for app in applications %}
         <div class="app-row">
           <div class="app-info">
-            <span class="app-role-badge app-role-{{ app.role }}">{{ app.get_role_display }}</span>
-            <h4 class="mb-1">{{ app.name }}</h4>
-            <p class="mb-0 text-muted small">
-              {{ app.email }} &nbsp;&middot;&nbsp; {{ app.phone }}
-              {% if app.batch %} &nbsp;&middot;&nbsp; Batch {{ app.batch }}{% endif %}
+            <span class="app-role-badge app-role-{{ app.role }}">
+              {{ app.get_role_display }}
+            </span>
+            <h3 class="mb-1" style="font-size: 1.35rem;">{{ app.name }}</h3>
+            <p class="mb-1 text-muted small">
+              <span class="fw-semibold text-dark">{{ app.email }}</span> &nbsp;&middot;&nbsp; 
+              <span>{{ app.phone }}</span>
+              {% if app.batch %}
+                &nbsp;&middot;&nbsp; <span class="chip chip-rust py-0 px-2" style="font-size:0.75rem;">Batch {{ app.batch }}</span>
+              {% endif %}
             </p>
-            <p class="mb-0 text-muted small">Applied {{ app.created_at|date:"d M Y, h:i A" }}</p>
+            <p class="mb-0 text-muted" style="font-size: 0.78rem;">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              Submitted on {{ app.created_at|date:"l, d F Y, h:i A" }}
+            </p>
           </div>
-          <div class="app-actions">
-            <form method="post" action="{% url 'approve_application' app.id %}" class="d-inline">
+
+          <div class="app-actions d-flex align-items-center gap-2">
+            <form method="post" action="{% url 'approve_application' app.id %}" class="d-inline m-0">
               {% csrf_token %}
-              <button type="submit" class="btn btn-primary btn-sm">Approve</button>
+              <button type="submit" class="btn btn-primary btn-sm" onclick="return confirm('Approve this application? A generated login ID and password will be immediately dispatched to {{ app.email }}.');">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+                <span>Approve &amp; Email Credentials</span>
+              </button>
             </form>
-            <form method="post" action="{% url 'reject_application' app.id %}" class="d-inline ms-2">
+
+            <form method="post" action="{% url 'reject_application' app.id %}" class="d-inline m-0">
               {% csrf_token %}
-              <button type="submit" class="btn btn-outline-danger btn-sm">Reject</button>
+              <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Reject this application from {{ app.name }}?');">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <span>Reject</span>
+              </button>
             </form>
           </div>
         </div>
       {% endfor %}
     </div>
   {% else %}
-    <p class="text-muted">No pending applications right now.</p>
+    <div class="alert alert-info py-4 text-center">
+      <div class="mb-2">
+        <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <h4 class="alert-heading mb-1">Queue is Clear</h4>
+      <p class="mb-0 text-muted">There are no pending student or faculty applications awaiting approval at this time.</p>
+    </div>
   {% endif %}
 {% endblock %}

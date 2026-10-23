@@ -1,35 +1,67 @@
 {% extends "dashboard_section_base.html" %}
-{% block title %}Results{% endblock %}
+{% block title %}Semester Results · Student Portal · IIT JU{% endblock %}
 
 {% block section_content %}
-  <div class="eyebrow">Academic Results</div>
-  <h2 class="mb-2">Your Results</h2>
+  <div class="eyebrow">Academic Standing</div>
+  <h1 class="mb-4">My Examination Results</h1>
+
   {% if latest_cgpa %}
     <div class="cgpa-banner">
-      <span class="cgpa-label">Current CGPA</span>
-      <span class="cgpa-value">{{ latest_cgpa }}</span>
+      <div>
+        <div class="cgpa-label">Cumulative Grade Point Average (CGPA)</div>
+        <div class="small opacity-75 mt-1">Official record based on published semester evaluations</div>
+      </div>
+      <div class="cgpa-value">{{ latest_cgpa }}</div>
     </div>
   {% endif %}
 
-  <div class="result-list mt-4">
+  <div class="result-list">
     {% for r in results %}
       <div class="result-card">
         <div class="result-head">
-          <h4>Semester {{ r.semester }}</h4>
+          <div>
+            <h4>Semester {{ r.semester }}</h4>
+            <div class="text-muted small">Published {{ r.published_at|date:"d M Y" }}</div>
+          </div>
           <div class="result-chips">
-            <span class="chip chip-rust">GPA {{ r.gpa }}</span>
-            <span class="chip">CGPA {{ r.cgpa }}</span>
+            <span class="chip chip-rust">Semester GPA: <strong>{{ r.gpa }}</strong></span>
+            <span class="chip">Cumulative CGPA: <strong>{{ r.cgpa }}</strong></span>
           </div>
         </div>
-        <table class="mock result-table">
-          <tr><th>Course</th><th>Grade</th><th>Grade Point</th></tr>
-          {% for g in r.course_grades.all %}
-            <tr><td>{{ g.course.code }} - {{ g.course.title }}</td><td>{{ g.grade }}</td><td>{{ g.grade_point }}</td></tr>
-          {% endfor %}
+
+        <table class="result-table">
+          <thead>
+            <tr>
+              <th>Course Unit</th>
+              <th>Letter Grade</th>
+              <th>Grade Point</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for g in r.course_grades.all %}
+              <tr>
+                <td>
+                  <span class="fw-bold text-dark font-monospace">{{ g.course.code }}</span> &mdash; {{ g.course.title }}
+                </td>
+                <td>
+                  <span class="chip chip-rust fw-bold">{{ g.grade }}</span>
+                </td>
+                <td class="font-monospace fw-bold">
+                  {{ g.grade_point }}
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="3" class="text-muted small">No specific course grades recorded.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
         </table>
       </div>
     {% empty %}
-      <p class="text-muted">No results have been published yet.</p>
+      <div class="alert alert-info">
+        No semester results have been officially published for your account yet.
+      </div>
     {% endfor %}
   </div>
 {% endblock %}

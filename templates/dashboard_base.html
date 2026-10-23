@@ -5,30 +5,33 @@
     <aside class="dash-sidebar">
       <div class="dash-user-card">
         {% if user.profile_picture %}
-          <img src="{{ user.profile_picture.url }}" class="dash-user-avatar" alt="">
+          <img src="{{ user.profile_picture.url }}" class="dash-user-avatar" alt="Avatar">
         {% else %}
           <div class="dash-user-avatar dash-user-avatar-placeholder">{{ user.first_name|first|upper }}</div>
         {% endif %}
         <div class="dash-user-name">{{ user.first_name }}</div>
         <div class="dash-user-role">{{ user.get_role_display }}</div>
+        {% if user.batch %}
+          <div class="mt-2"><span class="chip">{{ user.batch }}</span></div>
+        {% endif %}
       </div>
 
       <nav>
         <a href="/student-dashboard/" class="dash-link {% if active == 'home' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 11l8-7 8 7M6 10v10h12V10"/></svg>
-          <span>Home</span>
+          <span>Dashboard Home</span>
         </a>
         <a href="/student-dashboard/profile/" class="dash-link {% if active == 'profile' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-          <span>Profile</span>
+          <span>My Profile</span>
         </a>
         <a href="/student-dashboard/routine/" class="dash-link {% if active == 'routine' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
-          <span>Routine</span>
+          <span>Class Routine</span>
         </a>
         <a href="/student-dashboard/attendance/" class="dash-link {% if active == 'attendance' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
-          <span>Attendance</span>
+          <span>My Attendance</span>
         </a>
         <a href="/student-dashboard/notice/" class="dash-link {% if active == 'notice' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>
@@ -36,7 +39,7 @@
         </a>
         <a href="/student-dashboard/results/" class="dash-link {% if active == 'results' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
-          <span>Results</span>
+          <span>Semester Results</span>
         </a>
         <a href="/student-dashboard/change-password/" class="dash-link {% if active == 'password' %}active{% endif %}">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>
@@ -44,6 +47,7 @@
         </a>
       </nav>
     </aside>
+
     <main class="dash-content">
       {% block dash_content %}{% endblock %}
     </main>

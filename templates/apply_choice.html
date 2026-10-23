@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Apply for Portal Access · IIT JU{% endblock %}
+
+{% block content %}
+  <div class="apply-heading">
+    <div class="eyebrow">Membership &amp; Account Access</div>
+    <h1 class="mb-3">Join the Institute Portal</h1>
+    <p class="text-muted">Select your primary role at the Institute of Information Technology, Jahangirnagar University to begin your onboarding application.</p>
+  </div>
+
+  <div class="role-choice-grid">
+    <a href="/accounts/apply/student/" class="role-card">
+      <div class="role-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+      </div>
+      <h4>Student Registration</h4>
+      <p>Currently enrolled students across undergraduate and postgraduate programs. Requires your admission batch and valid contact details.</p>
+      <span class="btn btn-primary w-100">
+        <span>Apply as Student</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
+
+    <a href="/accounts/apply/teacher/" class="role-card">
+      <div class="role-icon">
+        <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+          <path d="M12 6v6M9 9h6"/>
+        </svg>
+      </div>
+      <h4>Faculty Registration</h4>
+      <p>Appointed faculty members and course instructors. Access grading, student rosters, automated attendance, and class schedules.</p>
+      <span class="btn btn-outline-primary w-100">
+        <span>Apply as Teacher</span>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </span>
+    </a>
+  </div>
+
+  <div class="text-center mt-5">
+    <p class="text-muted small">
+      Already have an approved account? <a href="/accounts/login/" class="fw-bold">Sign in here</a>.
+    </p>
+  </div>
+{% endblock %}
