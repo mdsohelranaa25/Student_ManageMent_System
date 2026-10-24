@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",        
     "django.contrib.staticfiles",
     "cloudinary", 
+    "anymail",
     # our apps
     "accounts",
     "academics",
@@ -76,14 +77,10 @@ AUTH_PASSWORD_VALIDATORS = [
 EMAIL_BACKEND = config(
     "EMAIL_BACKEND", default="django.core.mail.backends.console.EmailBackend"
 )
-EMAIL_HOST = "smtp.gmail.com"
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_TIMEOUT = 10
-EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
-EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER or "noreply@localhost"
+ANYMAIL = {
+    "BREVO_API_KEY": config("BREVO_API_KEY", default=""),
+}
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="noreply@localhost")
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Dhaka"
