@@ -1,3 +1,5 @@
+import csv
+from django.http import HttpResponse
 from datetime import timedelta
 
 from django.contrib import messages
@@ -16,7 +18,7 @@ from datetime import date as date_today
 from academics.models import Announcement, AnnouncementComment, Batch, Course, ExamRoutine, Routine, SemesterResult, TimeSlot
 from .forms import ApplicationForm, ForgotPasswordForm, ProfilePictureForm, SetNewPasswordForm
 from .models import Application, PasswordResetCode, User
-from .utils import generate_password, generate_reset_code, generate_student_username, generate_teacher_username
+from .utils import generate_password, generate_reset_code, generate_student_username, generate_teacher_username, import_students_from_file
 
 
 def home(request):
@@ -526,3 +528,74 @@ def teacher_change_password(request):
     else:
         form = PasswordChangeForm(request.user)
     return render(request, "teacher_change_password.html", {"form": form, "active": "password"})
+
+@login_required
+@user_passes_test(admin_only)
+def import_students(request):
+    results = None
+    if request.method == "POST":
+        uploaded_file = request.FILES.get("file")
+        if not uploaded_file:
+            messages.error(request, "Please select an Excel (.xlsx) or CSV (.csv) file to upload.")
+            return redirect("import_students")
+
+        name_lower = uploaded_file.name.lower()
+        if not (name_lower.endswith(".xlsx") or name_lower.endswith(".xls") or name_lower.endswith(".csv")):
+            messages.error(request, "Invalid file format. Please upload an Excel (.xlsx) or CSV (.csv) file.")
+            return redirect("import_students")
+
+        results = import_students_from_file(uploaded_file, request=request)
+        if results["success_count"] > 0:
+            messages.success(
+                request,
+                f"Successfully created {results['success_count']} student account(s) and dispatched credentials via email!"
+            )
+        if results["error_count"] > 0:
+            messages.warning(
+                request,
+                f"{results['error_count']} row(s) had errors or were skipped (e.g. duplicate email)."
+            )
+
+    return render(request, "import_students.html", {"results": results, "active": "import_students"})
+
+
+@login_required
+@user_passes_test(admin_only)
+def download_student_template(request):
+    format_type = request.GET.get("format", "csv").lower()
+    headers = ["Name", "Email", "Phone", "Batch", "Roll", "Reg"]
+    sample_rows = [
+        ["Rahim Ahmed", "rahim@example.com", "01711000001", "2023-24", "1", "2023001"],
+        ["Fatima Begum", "fatima@example.com", "01811000002", "2023-24", "2", "2023002"],
+        ["Sohel Rana", "sohel@example.com", "01911000003", "2023-24", "3", "2023003"],
+    ]
+
+    if format_type == "xlsx":
+        import openpyxl
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Students"
+        ws.append(headers)
+        for r in sample_rows:
+            ws.append(r)
+
+        for col_idx in range(1, len(headers) + 1):
+            cell = ws.cell(row=1, column=col_idx)
+            cell.font = openpyxl.styles.Font(bold=True, color="FFFFFF")
+            cell.fill = openpyxl.styles.PatternFill(start_color="0B241A", end_color="0B241A", fill_type="solid")
+            ws.column_dimensions[openpyxl.utils.get_column_letter(col_idx)].width = 20
+
+        response = HttpResponse(
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        response["Content-Disposition"] = 'attachment; filename="student_import_template.xlsx"'
+        wb.save(response)
+        return response
+    else:
+        response = HttpResponse(content_type="text/csv; charset=utf-8")
+        response["Content-Disposition"] = 'attachment; filename="student_import_template.csv"'
+        writer = csv.writer(response)
+        writer.writerow(headers)
+        for r in sample_rows:
+            writer.writerow(r)
+        return response

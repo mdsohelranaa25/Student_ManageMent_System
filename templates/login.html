@@ -32,8 +32,9 @@
           {% csrf_token %}
 
           <div class="mb-3">
-            <label class="form-label">Username or Login ID</label>
+            <label class="form-label">Registration No / Username</label>
             {{ form.username }}
+            <div class="form-text text-muted" style="font-size: 0.76rem;">Students: Enter your Registration Number. Faculty: Enter Username.</div>
           </div>
 
           <div class="mb-3">
@@ -53,8 +54,8 @@
         </form>
 
         <div class="text-center mt-4 pt-2 border-top">
-          <p class="text-muted small mb-1">Don't have an approved account yet?</p>
-          <a href="/accounts/apply/" class="fw-bold small">Submit an application &rarr;</a>
+          <p class="text-muted small mb-1">Students are enrolled directly by Department Administration.</p>
+          <a href="/accounts/apply/teacher/" class="fw-bold small">Faculty Membership Application &rarr;</a>
         </div>
       </div>
     </div>

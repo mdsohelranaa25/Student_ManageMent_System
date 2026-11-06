@@ -24,31 +24,43 @@
 
     <div class="profile-hero-info">
       <h2 class="mb-2">{{ user.first_name }}</h2>
-      <div class="profile-chips">
+      <div class="profile-chips flex-wrap">
         <span class="chip chip-rust">Batch {{ user.batch|default:"Not Assigned" }}</span>
         <span class="chip">Roll {{ user.roll|default:"—" }}</span>
+        {% if user.registration_no %}
+          <span class="chip">Reg: {{ user.registration_no }}</span>
+        {% endif %}
         <span class="chip">Student</span>
       </div>
       <p class="text-muted small mt-2 mb-0">Click the camera badge on your photo to upload a new profile picture.</p>
     </div>
   </div>
 
+  <div class="alert alert-light border small py-2 px-3 mb-3 d-flex align-items-center gap-2" style="background: var(--surface-muted);">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--primary-soft)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    <span><strong>Official Identity Locked:</strong> Your Roll Number, Registration Number, Batch, and Username are verified and locked by the Department.</span>
+  </div>
+
   <div class="info-card">
     <div class="info-row">
       <span class="info-label">Institutional Login ID</span>
-      <span class="info-value font-monospace">{{ user.username }}</span>
+      <span class="info-value font-monospace text-primary fw-bold">{{ user.username }}</span>
     </div>
     <div class="info-row">
-      <span class="info-label">Institute</span>
-      <span class="info-value">Institute of Information Technology (IIT), Jahangirnagar University</span>
+      <span class="info-label">Registration / Student ID</span>
+      <span class="info-value font-monospace fw-semibold">{{ user.registration_no|default:"Not assigned" }}</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Class Roll Number</span>
+      <span class="info-value fw-semibold">{{ user.roll|default:"Not assigned" }}</span>
     </div>
     <div class="info-row">
       <span class="info-label">Current Academic Batch</span>
       <span class="info-value">{{ user.batch.name|default:"Not assigned" }}</span>
     </div>
     <div class="info-row">
-      <span class="info-label">Class Roll Number</span>
-      <span class="info-value">{{ user.roll|default:"Not assigned" }}</span>
+      <span class="info-label">Institute</span>
+      <span class="info-value">Institute of Information Technology (IIT), Jahangirnagar University</span>
     </div>
     <div class="info-row">
       <span class="info-label">Registered Email</span>

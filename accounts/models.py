@@ -26,6 +26,7 @@ class User(AbstractUser):
         related_name="students",
     )
     roll = models.PositiveIntegerField(null=True, blank=True, help_text="Roll number within the batch")
+    registration_no = models.CharField(max_length=50, blank=True, null=True, help_text="Registration Number / Student ID")
     profile_picture = models.ImageField(upload_to="profile_pics/", null=True, blank=True)
 
     def save(self, *args, **kwargs):

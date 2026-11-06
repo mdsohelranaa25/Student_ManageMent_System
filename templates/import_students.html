@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+{% block title %}Bulk Student Import · Admin · IIT JU{% endblock %}
+
+{% block content %}
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+    <div>
+      <div class="eyebrow">Institute Administration</div>
+      <h1 class="mb-1" style="font-size: 2.2rem;">Bulk Student Import (Excel / CSV)</h1>
+      <p class="text-muted mb-0">Upload a spreadsheet to automatically create student accounts, generate usernames &amp; passwords, and email credentials.</p>
+    </div>
+    <a href="/admin-dashboard/" class="btn btn-outline-primary btn-sm">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      <span>Back to Admin Center</span>
+    </a>
+  </div>
+
+  <div class="row g-4 mb-4">
+    <!-- Upload Box -->
+    <div class="col-lg-7">
+      <div class="card h-100 shadow-sm border-0" style="background: var(--surface);">
+        <div class="card-body p-4">
+          <h2 class="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <span>Upload Student Spreadsheet</span>
+          </h2>
+          <p class="text-muted small mb-4">
+            Upload your student list in <strong>.xlsx</strong> (Excel) or <strong>.csv</strong> format. 
+            The system will read each row, generate institutional usernames and secure passwords, save them to the database, and dispatch welcome emails.
+          </p>
+
+          <form method="post" enctype="multipart/form-data" class="d-flex flex-column gap-3">
+            {% csrf_token %}
+            <div class="p-4 rounded text-center border-2 border-dashed" style="background: var(--surface-muted); border: 2px dashed var(--border-strong);">
+              <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="var(--primary-soft)" stroke-width="1.5" class="mb-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+              <div class="fw-semibold mb-1">Choose an Excel or CSV file</div>
+              <div class="text-muted small mb-3">Accepted formats: .xlsx, .xls, .csv</div>
+              <input type="file" name="file" id="file" class="form-control mx-auto" style="max-width: 320px;" accept=".xlsx, .xls, .csv" required>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+              <span class="text-muted small">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                Duplicate emails are automatically skipped.
+              </span>
+              <button type="submit" class="btn btn-primary px-4">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <span>Import &amp; Send Credentials</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Template & Instructions Card -->
+    <div class="col-lg-5">
+      <div class="card h-100 shadow-sm border-0" style="background: var(--surface);">
+        <div class="card-body p-4 d-flex flex-column justify-content-between">
+          <div>
+            <h2 class="h5 fw-bold mb-3 d-flex align-items-center gap-2">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>Sample Spreadsheet Templates</span>
+            </h2>
+            <p class="text-muted small mb-3">Download pre-formatted template files containing required headers and sample data:</p>
+            
+            <div class="d-flex gap-2 flex-wrap mb-4">
+              <a href="{% url 'download_student_template' %}?format=xlsx" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-2">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Download Excel (.xlsx)</span>
+              </a>
+              <a href="{% url 'download_student_template' %}?format=csv" class="btn btn-outline-secondary btn-sm d-inline-flex align-items-center gap-2">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                <span>Download CSV (.csv)</span>
+              </a>
+            </div>
+
+            <h3 class="h6 fw-bold mb-2">Required Columns in Sheet:</h3>
+            <div class="table-responsive">
+              <table class="table table-sm table-bordered small mb-0" style="background: var(--surface-muted);">
+                <thead class="table-dark">
+                  <tr>
+                    <th>Column</th>
+                    <th>Example</th>
+                    <th>Rules</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="fw-semibold">Name</td>
+                    <td>Rahim Ahmed</td>
+                    <td>Required (Full name)</td>
+                  </tr>
+                  <tr>
+                    <td class="fw-semibold">Email</td>
+                    <td>rahim@gmail.com</td>
+                    <td>Required (Credentials emailed here)</td>
+                  </tr>
+                  <tr>
+                    <td class="fw-semibold">Phone</td>
+                    <td>01711000001</td>
+                    <td>Optional / 11 digits</td>
+                  </tr>
+                  <tr>
+                    <td class="fw-semibold">Batch</td>
+                    <td>2023-24</td>
+                    <td>Admission year</td>
+                  </tr>
+                  <tr>
+                    <td class="fw-semibold">Roll</td>
+                    <td>1</td>
+                    <td>Class roll (locked)</td>
+                  </tr>
+                  <tr>
+                    <td class="fw-semibold">Reg</td>
+                    <td>2023001</td>
+                    <td>Required &amp; Unique (Used as Student Login ID)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results Section -->
+  {% if results %}
+    <div class="card shadow-sm border-0 mb-4" style="background: var(--surface);">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+          <h2 class="h5 fw-bold mb-0">Import Processing Report</h2>
+          <div class="d-flex gap-2">
+            <span class="badge bg-success py-2 px-3 fs-6">Created: {{ results.success_count }}</span>
+            {% if results.error_count > 0 %}
+              <span class="badge bg-danger py-2 px-3 fs-6">Errors / Skipped: {{ results.error_count }}</span>
+            {% endif %}
+          </div>
+        </div>
+
+        {% if results.created_students %}
+          <div class="table-responsive mb-4">
+            <h3 class="h6 fw-bold text-success mb-2">Successfully Created Student Accounts</h3>
+            <table class="table table-hover table-bordered align-middle small">
+              <thead class="table-light">
+                <tr>
+                  <th>Row</th>
+                  <th>Full Name</th>
+                  <th>Reg No (Login ID)</th>
+                  <th>Generated Password</th>
+                  <th>Email</th>
+                  <th>Batch</th>
+                  <th>Class Roll</th>
+                  <th>Email Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for st in results.created_students %}
+                  <tr>
+                    <td>{{ st.row }}</td>
+                    <td class="fw-semibold">{{ st.name }}</td>
+                    <td><span class="font-monospace text-primary fw-bold">{{ st.reg }}</span></td>
+                    <td><code class="text-dark bg-light px-1">{{ st.password }}</code></td>
+                    <td>{{ st.email }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ st.batch }}</span></td>
+                    <td>{{ st.roll }}</td>
+                    <td>
+                      {% if st.email_sent %}
+                        <span class="badge bg-success">Dispatched</span>
+                      {% else %}
+                        <span class="badge bg-warning text-dark" title="{{ st.email_error }}">Failed / Console</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+
+        {% if results.errors %}
+          <div class="table-responsive">
+            <h3 class="h6 fw-bold text-danger mb-2">Skipped Rows / Errors</h3>
+            <table class="table table-sm table-bordered align-middle small table-danger">
+              <thead>
+                <tr>
+                  <th>Row</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Reason</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for err in results.errors %}
+                  <tr>
+                    <td>{{ err.row }}</td>
+                    <td>{{ err.name }}</td>
+                    <td>{{ err.email }}</td>
+                    <td class="text-danger fw-semibold">{{ err.error }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+
+{% endblock %}
