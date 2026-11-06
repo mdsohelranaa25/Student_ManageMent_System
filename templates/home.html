@@ -59,6 +59,128 @@
     </div>
   </div>
 
+  <!-- Official Departmental Notice Board Section -->
+  <section class="hs pt-0" id="official-notices">
+    <div class="container">
+      <div class="hs-head" data-reveal>
+        <div class="hs-eyebrow">Official Circulars</div>
+        <h2 class="hs-title">Departmental Notice Board</h2>
+        <p class="hs-sub">Official announcements, academic circulars, and departmental schedules for all students, faculty, and visitors.</p>
+      </div>
+
+      <div class="card shadow-sm border-0" style="background: var(--surface); border-radius: 12px; overflow: hidden;" data-reveal>
+        <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center" style="background: var(--primary); color: #fff;">
+          <div class="d-flex align-items-center gap-2">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+            <span class="fw-bold tracking-wide" style="font-size: 0.95rem; letter-spacing: 0.5px;">Latest Official Notices</span>
+          </div>
+          <span class="badge" style="background: rgba(255,255,255,0.15); color: #fff; font-weight: 500;">
+            {{ notices|length }} Notice{{ notices|length|pluralize }} Active
+          </span>
+        </div>
+
+        <div class="card-body p-0">
+          {% if notices %}
+            <div class="list-group list-group-flush">
+              {% for notice in notices %}
+                <div class="list-group-item p-4 d-flex flex-column flex-md-row justify-content-between align-items-start gap-3 transition-all hover-shadow" style="border-color: var(--border-subtle); background: {% if notice.is_pinned %}var(--surface-muted){% else %}var(--surface){% endif %};">
+                  <div class="d-flex gap-3 align-items-start w-100">
+                    <!-- Date badge -->
+                    <div class="text-center rounded px-3 py-2 flex-shrink-0" style="background: var(--primary-soft); color: #fff; min-width: 72px;">
+                      <div class="small text-uppercase fw-bold text-white-50" style="font-size: 0.7rem; letter-spacing: 1px;">{{ notice.created_at|date:"M" }}</div>
+                      <div class="h3 mb-0 fw-bold lh-1 text-white">{{ notice.created_at|date:"d" }}</div>
+                      <div class="small text-white-50" style="font-size: 0.7rem;">{{ notice.created_at|date:"Y" }}</div>
+                    </div>
+
+                    <!-- Notice info -->
+                    <div class="flex-grow-1">
+                      <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                        {% if notice.is_pinned %}
+                          <span class="badge" style="background: var(--accent); color: #fff; font-size: 0.72rem;">PINNED NOTICE</span>
+                        {% endif %}
+                        <span class="text-muted small" style="font-size: 0.78rem;">
+                          Published on {{ notice.created_at|date:"l, d F Y, h:i A" }}
+                        </span>
+                      </div>
+
+                      <h4 class="h5 mb-2 fw-bold" style="color: var(--text);">{{ notice.title }}</h4>
+                      <p class="text-muted small mb-0" style="line-height: 1.5; max-width: 800px;">
+                        {{ notice.content|truncatechars:180 }}
+                      </p>
+
+                      {% if notice.attachment %}
+                        <div class="mt-2">
+                          <a href="{{ notice.attachment.url }}" target="_blank" class="badge text-decoration-none py-1 px-2 d-inline-flex align-items-center gap-1 border" style="background: #fff; color: var(--primary); font-size: 0.78rem;">
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                            <span>Attachment Available (Download)</span>
+                          </a>
+                        </div>
+                      {% endif %}
+                    </div>
+                  </div>
+
+                  <!-- Read Button Trigger Modal -->
+                  <div class="flex-shrink-0 mt-2 mt-md-0 align-self-md-center">
+                    <button type="button" class="btn btn-outline-primary btn-sm px-3" data-bs-toggle="modal" data-bs-target="#noticeModal{{ notice.id }}">
+                      <span>View Notice</span>
+                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Modal for this Notice -->
+                <div class="modal fade" id="noticeModal{{ notice.id }}" tabindex="-1" aria-labelledby="noticeModalLabel{{ notice.id }}" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow">
+                      <div class="modal-header" style="background: var(--primary); color: #fff;">
+                        <h5 class="modal-title fw-bold" id="noticeModalLabel{{ notice.id }}">Official Notice</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body p-4" style="background: var(--surface);">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                          {% if notice.is_pinned %}
+                            <span class="badge" style="background: var(--accent); color: #fff;">PINNED</span>
+                          {% endif %}
+                          <span class="text-muted small">Date: {{ notice.created_at|date:"l, d F Y, h:i A" }}</span>
+                        </div>
+                        <h3 class="h4 fw-bold mb-3" style="color: var(--primary);">{{ notice.title }}</h3>
+                        <div class="p-3 rounded mb-3" style="background: var(--surface-muted); line-height: 1.7; white-space: pre-line; color: var(--text);">
+{{ notice.content }}
+                        </div>
+                        {% if notice.attachment %}
+                          <div class="p-3 border rounded d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                              <div class="fw-semibold small">Official Attached Document</div>
+                              <div class="text-muted" style="font-size: 0.78rem;">Click download to view original PDF / file</div>
+                            </div>
+                            <a href="{{ notice.attachment.url }}" download class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                              <span>Download Document</span>
+                            </a>
+                          </div>
+                        {% endif %}
+                      </div>
+                      <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="p-5 text-center text-muted">
+              <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" class="mb-2 opacity-50"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+              <div class="fw-semibold">No official notices published currently.</div>
+              <p class="small mb-0">Official circulars from the Department Office will be displayed here.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="hs">
     <div class="container">
       <div class="hs-head" data-reveal>

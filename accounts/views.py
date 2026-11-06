@@ -15,7 +15,7 @@ from django.utils import timezone
 
 from datetime import date as date_today
 
-from academics.models import Announcement, AnnouncementComment, Batch, Course, ExamRoutine, Routine, SemesterResult, TimeSlot
+from academics.models import Announcement, AnnouncementComment, Batch, Course, ExamRoutine, OfficialNotice, Routine, SemesterResult, TimeSlot
 from .forms import ApplicationForm, ForgotPasswordForm, ProfilePictureForm, SetNewPasswordForm
 from .models import Application, PasswordResetCode, User
 from .utils import generate_password, generate_reset_code, generate_student_username, generate_teacher_username, import_students_from_file
@@ -28,7 +28,8 @@ def home(request):
         "courses": Course.objects.count(),
         "batches": Batch.objects.filter(is_running=True).count(),
     }
-    return render(request, "home.html", {"stats": stats})
+    notices = OfficialNotice.objects.filter(is_active=True).order_by("-is_pinned", "-created_at")[:10]
+    return render(request, "home.html", {"stats": stats, "notices": notices})
 
 
 def apply_choice(request):
@@ -493,7 +494,7 @@ def student_results(request):
 @user_passes_test(admin_only)
 def admin_dashboard_home(request):
     stats = {
-        "pending_applications": Application.objects.filter(status="pending").count(),
+        "total_notices": OfficialNotice.objects.count(),
         "total_students": User.objects.filter(role="student").count(),
         "total_teachers": User.objects.filter(role="teacher").count(),
         "total_courses": Course.objects.count(),

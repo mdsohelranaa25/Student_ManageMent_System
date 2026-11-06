@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 from .models import (
     Announcement, AnnouncementComment, Batch, Course, CourseGrade,
-    ExamRoutine, Room, Routine, SemesterResult, TimeSlot,
+    ExamRoutine, OfficialNotice, Room, Routine, SemesterResult, TimeSlot,
 )
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
@@ -66,3 +66,10 @@ class SemesterResultAdmin(admin.ModelAdmin):
 @admin.register(CourseGrade)
 class CourseGradeAdmin(admin.ModelAdmin):
     list_display = ("semester_result", "course", "grade", "grade_point")
+
+@admin.register(OfficialNotice)
+class OfficialNoticeAdmin(admin.ModelAdmin):
+    list_display = ("title", "is_pinned", "is_active", "created_at")
+    list_filter = ("is_pinned", "is_active", "created_at")
+    search_fields = ("title", "content")
+    list_editable = ("is_pinned", "is_active")

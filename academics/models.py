@@ -172,3 +172,26 @@ class CourseGrade(models.Model):
 
     def __str__(self):
         return f"{self.course.code} - {self.grade}"
+
+class OfficialNotice(models.Model):
+    """Public department notices displayed on the home page for everyone."""
+    title = models.CharField(max_length=200, help_text="Notice headline")
+    content = models.TextField(help_text="Detailed notice text")
+    attachment = models.FileField(upload_to="official_notices/", null=True, blank=True, help_text="PDF or document attachment")
+    is_pinned = models.BooleanField(default=False, help_text="Pin to the top of notice board")
+    is_active = models.BooleanField(default=True, help_text="Show on home page")
+    created_by = models.ForeignKey(
+        "accounts.User",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        limit_choices_to={"role": "admin"},
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-is_pinned", "-created_at"]
+
+    def __str__(self):
+        return self.title

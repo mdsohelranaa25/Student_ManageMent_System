@@ -14,10 +14,10 @@
   <div class="stats-row">
     <div class="stat-card stat-rust">
       <div class="stat-icon">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
       </div>
-      <div class="stat-value">{{ stats.pending_applications }}</div>
-      <div class="stat-label">Pending Applications</div>
+      <div class="stat-value">{{ stats.total_notices }}</div>
+      <div class="stat-label">Official Notices</div>
     </div>
 
     <div class="stat-card">
@@ -54,7 +54,7 @@
   </div>
 
   <div class="tile-section">
-    <div class="tile-section-title">People &amp; Membership Verification</div>
+    <div class="tile-section-title">Student Onboarding &amp; Public Notices</div>
     <div class="tile-grid">
       <a href="/accounts/import-students/" class="tile-card" style="border-left: 3px solid var(--accent);">
         <div class="tile-icon" style="color: var(--accent);">
@@ -63,12 +63,12 @@
         <div class="tile-title" style="color: var(--accent);">Bulk Student Import (Excel)</div>
         <div class="tile-desc">Upload Excel/CSV sheet with Name, Email, Batch, Roll, Reg to auto-create accounts &amp; email credentials.</div>
       </a>
-      <a href="/accounts/applications/" class="tile-card">
-        <div class="tile-icon">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H8l-4 4z"/></svg>
+      <a href="/admin/academics/officialnotice/" class="tile-card">
+        <div class="tile-icon" style="color: var(--primary);">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         </div>
-        <div class="tile-title">Review Applications</div>
-        <div class="tile-desc">Verify, approve, and auto-dispatch credentials to new student and faculty applicants.</div>
+        <div class="tile-title">Manage Official Notices</div>
+        <div class="tile-desc">Publish announcements, academic circulars, or PDF notices visible on the homepage.</div>
       </a>
       <a href="/admin/accounts/user/?role__exact=student" class="tile-card">
         <div class="tile-icon">
