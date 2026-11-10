@@ -18,7 +18,7 @@ from datetime import date as date_today
 from academics.models import Announcement, AnnouncementComment, Batch, Course, ExamRoutine, OfficialNotice, Routine, SemesterResult, TimeSlot
 from .forms import ApplicationForm, ForgotPasswordForm, ProfilePictureForm, SetNewPasswordForm
 from .models import Application, PasswordResetCode, User
-from .utils import generate_password, generate_reset_code, generate_student_username, generate_teacher_username, import_students_from_file
+from .utils import generate_password, generate_reset_code, import_students_from_file, import_users_from_file
 
 
 def home(request):
@@ -94,11 +94,7 @@ def applications_list(request):
 def approve_application(request, application_id):
     application = get_object_or_404(Application, id=application_id, status="pending")
 
-    if application.role == "student":
-        username = generate_student_username(application.batch, application.name)
-    else:
-        username = generate_teacher_username(application.name)
-
+    username = application.email
     password = generate_password()
 
     user = User.objects.create_user(
@@ -119,7 +115,7 @@ def approve_application(request, application_id):
         "Your account has been approved",
         f"Hello {application.name},\n\n"
         f"Your application has been approved.\n\n"
-        f"Username: {username}\n"
+        f"Login ID (Email): {username}\n"
         f"Password: {password}\n\n"
         f"Log in and change your password after your first login.",
         None,
@@ -545,16 +541,21 @@ def import_students(request):
             messages.error(request, "Invalid file format. Please upload an Excel (.xlsx) or CSV (.csv) file.")
             return redirect("import_students")
 
-        results = import_students_from_file(uploaded_file, request=request)
+        results = import_users_from_file(uploaded_file, request=request)
         if results["success_count"] > 0:
+            summary_parts = []
+            if results["student_count"] > 0:
+                summary_parts.append(f"{results['student_count']} student(s)")
+            if results["teacher_count"] > 0:
+                summary_parts.append(f"{results['teacher_count']} teacher(s)")
             messages.success(
                 request,
-                f"Successfully created {results['success_count']} student account(s) and dispatched credentials via email!"
+                f"Successfully created {' and '.join(summary_parts)} and dispatched credentials via email!"
             )
         if results["error_count"] > 0:
             messages.warning(
                 request,
-                f"{results['error_count']} row(s) had errors or were skipped (e.g. duplicate email)."
+                f"{results['error_count']} row(s) had errors or were skipped (e.g. duplicate email/reg)."
             )
 
     return render(request, "import_students.html", {"results": results, "active": "import_students"})
@@ -564,18 +565,41 @@ def import_students(request):
 @user_passes_test(admin_only)
 def download_student_template(request):
     format_type = request.GET.get("format", "csv").lower()
-    headers = ["Name", "Email", "Phone", "Batch", "Roll", "Reg"]
-    sample_rows = [
-        ["Rahim Ahmed", "rahim@example.com", "01711000001", "2023-24", "1", "2023001"],
-        ["Fatima Begum", "fatima@example.com", "01811000002", "2023-24", "2", "2023002"],
-        ["Sohel Rana", "sohel@example.com", "01911000003", "2023-24", "3", "2023003"],
-    ]
+    target_type = request.GET.get("type", "student").lower()
+
+    if target_type == "teacher":
+        headers = ["Name", "Email", "Phone"]
+        sample_rows = [
+            ["Dr. Abu Sayed", "sayed@juniv.edu", "01711000010"],
+            ["Dr. Shamim Kaiser", "kaiser@juniv.edu", "01711000011"],
+            ["Jesmin Akhter", "jesmin@juniv.edu", "01811000012"],
+        ]
+        title = "Teachers"
+        filename_base = "teacher_import_template"
+    elif target_type in ("master", "hybrid", "combined"):
+        headers = ["Role", "Name", "Email", "Phone", "Batch", "Roll", "Reg"]
+        sample_rows = [
+            ["Teacher", "Dr. Abu Sayed", "sayed@juniv.edu", "01711000010", "", "", ""],
+            ["Student", "Rahim Ahmed", "rahim@example.com", "01711000001", "2023-24", "1", "2023001"],
+            ["Student", "Fatima Begum", "fatima@example.com", "01811000002", "2023-24", "2", "2023002"],
+        ]
+        title = "Users"
+        filename_base = "master_import_template"
+    else:
+        headers = ["Name", "Email", "Phone", "Batch", "Roll", "Reg"]
+        sample_rows = [
+            ["Rahim Ahmed", "rahim@example.com", "01711000001", "2023-24", "1", "2023001"],
+            ["Fatima Begum", "fatima@example.com", "01811000002", "2023-24", "2", "2023002"],
+            ["Sohel Rana", "sohel@example.com", "01911000003", "2023-24", "3", "2023003"],
+        ]
+        title = "Students"
+        filename_base = "student_import_template"
 
     if format_type == "xlsx":
         import openpyxl
         wb = openpyxl.Workbook()
         ws = wb.active
-        ws.title = "Students"
+        ws.title = title
         ws.append(headers)
         for r in sample_rows:
             ws.append(r)
@@ -589,12 +613,12 @@ def download_student_template(request):
         response = HttpResponse(
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
         )
-        response["Content-Disposition"] = 'attachment; filename="student_import_template.xlsx"'
+        response["Content-Disposition"] = f'attachment; filename="{filename_base}.xlsx"'
         wb.save(response)
         return response
     else:
         response = HttpResponse(content_type="text/csv; charset=utf-8")
-        response["Content-Disposition"] = 'attachment; filename="student_import_template.csv"'
+        response["Content-Disposition"] = f'attachment; filename="{filename_base}.csv"'
         writer = csv.writer(response)
         writer.writerow(headers)
         for r in sample_rows:
