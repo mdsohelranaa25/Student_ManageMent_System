@@ -1,12 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Schedule Examination · Admin · IIT JU{% endblock %}
+{% block title %}Schedule Examination · IIT JU{% endblock %}
 
 {% block content %}
   <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
     <div>
       <div class="eyebrow">Academic Operations</div>
       <h1 class="mb-1" style="font-size: 2.2rem;">Schedule Semester Examination</h1>
-      <p class="text-muted mb-0">Assign date, period, and room allocation for course examinations.</p>
+      <p class="text-muted mb-0">Select your assigned batch to schedule examination date, time slot, and hall allocation.</p>
     </div>
     {% if user.role == "admin" %}
       <a href="/admin-dashboard/" class="btn btn-outline-primary btn-sm">
@@ -31,19 +31,20 @@
       {% csrf_token %}
       <div class="routine-grid">
         <div class="mb-3">
-          <label class="form-label" for="id_semester">Semester</label>
-          <select id="id_semester" class="form-select" required>
-            <option value="">Select semester</option>
-            {% for s in semesters %}
-              <option value="{{ s }}">Semester {{ s }}</option>
+          <label class="form-label" for="id_batch">Batch</label>
+          <select id="id_batch" class="form-select" required>
+            <option value="">Select batch</option>
+            {% for b in batches %}
+              <option value="{{ b.id }}">Batch {{ b.name }} {% if b.current_semester %}(Semester {{ b.current_semester }}){% else %}(No active semester){% endif %}</option>
             {% endfor %}
           </select>
+          <div id="batch-helper" class="form-text small mt-1 text-muted"></div>
         </div>
 
         <div class="mb-3">
-          <label class="form-label" for="id_course">Course Unit</label>
+          <label class="form-label" for="id_course">Assigned Course Unit</label>
           <select name="course" id="id_course" class="form-select" required disabled>
-            <option value="">Select semester first</option>
+            <option value="">Select batch first</option>
           </select>
         </div>
 
@@ -84,7 +85,7 @@
       <div class="entry-row exam-row">
         <span class="entry-date">{{ e.date|date:"l, d M Y" }}</span>
         <span class="entry-time">{{ e.time_slot }}</span>
-        <span class="entry-course">{{ e.course.code }} &mdash; {{ e.course.title }}</span>
+        <span class="entry-course">{{ e.course.code }} &mdash; {{ e.course.title }} (Semester {{ e.course.semester }})</span>
         <span class="entry-room">Room {{ e.room }}</span>
       </div>
     {% empty %}
@@ -92,30 +93,50 @@
     {% endfor %}
   </div>
 
-  {{ courses_by_semester|json_script:"courses-data" }}
+  {{ courses_by_batch|json_script:"courses-batch-data" }}
 
   <script>
-    const coursesBySemester = JSON.parse(document.getElementById('courses-data').textContent);
+    const coursesByBatch = JSON.parse(document.getElementById('courses-batch-data').textContent);
 
-    const semesterSelect = document.getElementById('id_semester');
+    const batchSelect = document.getElementById('id_batch');
     const courseSelect = document.getElementById('id_course');
+    const batchHelper = document.getElementById('batch-helper');
     const dateInput = document.getElementById('id_date');
     const slotSelect = document.getElementById('id_time_slot');
     const roomGrid = document.getElementById('room-grid');
     const roomInput = document.getElementById('id_room');
     const submitBtn = document.getElementById('submit-btn');
 
-    semesterSelect.addEventListener('change', function () {
-      const sem = this.value;
+    batchSelect.addEventListener('change', function () {
+      const batchId = this.value;
       courseSelect.innerHTML = '<option value="">Select course</option>';
-      if (!sem) {
+      batchHelper.textContent = '';
+
+      if (!batchId) {
         courseSelect.disabled = true;
         return;
       }
-      (coursesBySemester[sem] || []).forEach(c => {
+
+      const batchInfo = coursesByBatch[batchId];
+      if (!batchInfo || !batchInfo.semester) {
+        courseSelect.disabled = true;
+        batchHelper.innerHTML = '<span class="text-warning">⚠ This batch has no active semester configured by admin.</span>';
+        return;
+      }
+
+      const courses = batchInfo.courses || [];
+      batchHelper.innerHTML = `<span class="badge bg-light text-dark border">Admin-configured Active Semester: Semester ${batchInfo.semester}</span>`;
+
+      if (courses.length === 0) {
+        courseSelect.innerHTML = `<option value="">No courses assigned to you in Semester ${batchInfo.semester} for this batch</option>`;
+        courseSelect.disabled = true;
+        return;
+      }
+
+      courses.forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.id;
-        opt.textContent = c.code + ' - ' + c.title;
+        opt.textContent = `${c.code} - ${c.title}`;
         courseSelect.appendChild(opt);
       });
       courseSelect.disabled = false;

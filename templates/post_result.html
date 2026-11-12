@@ -6,7 +6,7 @@
     <div>
       <div class="eyebrow">Academic Records</div>
       <h1 class="mb-1" style="font-size: 2.2rem;">Post Semester Results</h1>
-      <p class="text-muted mb-0">Record student semester GPA, cumulative CGPA, and granular course grade points.</p>
+      <p class="text-muted mb-0">Select batch, student, and semester. Setting grades for all courses is mandatory; GPA &amp; CGPA are calculated automatically.</p>
     </div>
     <a href="/admin-dashboard/" class="btn btn-outline-primary btn-sm">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -14,31 +14,44 @@
     </a>
   </div>
 
-  <div class="routine-card" style="max-width: 960px;">
-    <div class="d-flex align-items-center gap-2 mb-3">
-      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="text-accent"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
-      <h3 class="mb-0">{% if edit_result %}Edit Published Result{% else %}New Result Entry{% endif %}</h3>
+  <div class="routine-card" style="max-width: 1000px;">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+      <div class="d-flex align-items-center gap-2">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" class="text-accent"><path d="M4 20V10M12 20V4M20 20v-7"/></svg>
+        <h3 class="mb-0">{% if edit_result %}Edit Published Result{% else %}Publish New Semester Result{% endif %}</h3>
+      </div>
+      <span class="badge bg-light text-muted border">Bangladesh University (UGC) Grading Standard</span>
     </div>
 
     <form method="post" id="result-form">
       {% csrf_token %}
-      <div class="routine-grid">
-        <div class="mb-3">
-          <label class="form-label">Student</label>
-          <select name="student" class="form-select" required>
-            <option value="">Select student</option>
-            {% for s in students %}
-              <option value="{{ s.id }}" {% if edit_result and edit_result.student_id == s.id %}selected{% endif %}>
-                {{ s.username }} &mdash; {{ s.first_name }} ({{ s.batch }})
+      <div class="row g-3 mb-3">
+        <div class="col-md-4">
+          <label class="form-label fw-semibold" for="id_batch">1. Select Batch <span class="text-danger">*</span></label>
+          <select id="id_batch" class="form-select" required>
+            <option value="">-- Choose Batch --</option>
+            {% for b in batches %}
+              <option value="{{ b.id }}" {% if edit_result and edit_result.student.batch_id == b.id %}selected{% endif %}>
+                Batch {{ b.name }} {% if b.current_semester %}(Semester {{ b.current_semester }}){% endif %}
               </option>
             {% endfor %}
+            {% if students_by_batch.unassigned %}
+              <option value="unassigned">Unassigned Batch Students</option>
+            {% endif %}
           </select>
         </div>
 
-        <div class="mb-3">
-          <label class="form-label" for="id_semester">Semester</label>
+        <div class="col-md-5">
+          <label class="form-label fw-semibold" for="id_student">2. Select Student <span class="text-danger">*</span></label>
+          <select name="student" id="id_student" class="form-select" required disabled>
+            <option value="">-- Select batch first --</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" for="id_semester">3. Semester <span class="text-danger">*</span></label>
           <select name="semester" id="id_semester" class="form-select" required>
-            <option value="">Select semester</option>
+            <option value="">-- Semester --</option>
             {% for sem in semesters %}
               <option value="{{ sem }}" {% if edit_result and edit_result.semester == sem %}selected{% endif %}>
                 Semester {{ sem }}
@@ -46,34 +59,69 @@
             {% endfor %}
           </select>
         </div>
+      </div>
 
-        <div class="mb-3">
-          <label class="form-label">Semester GPA (0.00 - 4.00)</label>
-          <input type="number" step="0.01" min="0" max="4" name="gpa" class="form-control" placeholder="e.g. 3.75" required value="{% if edit_result %}{{ edit_result.gpa }}{% endif %}">
+      <!-- Live Calculation Banner -->
+      <div class="p-3 my-3 rounded-3 border d-flex align-items-center justify-content-between flex-wrap gap-3" style="background:#f8fafc; border-color:#e2e8f0 !important;">
+        <div class="d-flex align-items-center gap-4">
+          <div>
+            <div class="text-muted small text-uppercase fw-bold" style="letter-spacing:0.04em;">Semester GPA (Live)</div>
+            <div class="d-flex align-items-baseline gap-2">
+              <span id="live-gpa" class="fs-2 fw-bold text-primary">0.00</span>
+              <span class="text-muted small">/ 4.00</span>
+            </div>
+          </div>
+          <div class="vr opacity-25"></div>
+          <div>
+            <div class="text-muted small text-uppercase fw-bold" style="letter-spacing:0.04em;">Total Credits</div>
+            <div id="live-credits" class="fs-4 fw-semibold text-dark">0.0</div>
+          </div>
         </div>
-
-        <div class="mb-3">
-          <label class="form-label">Cumulative CGPA</label>
-          <input type="number" step="0.01" min="0" max="4" name="cgpa" class="form-control" placeholder="e.g. 3.82" required value="{% if edit_result %}{{ edit_result.cgpa }}{% endif %}">
+        <div class="text-end">
+          <div id="live-status-badge" class="badge bg-secondary px-3 py-2 fs-6">
+            Select a semester to load courses
+          </div>
+          <div class="small text-muted mt-1">GPA &amp; CGPA are calculated via UGC formula</div>
         </div>
       </div>
 
-      <div class="p-3 my-3 rounded" style="background:var(--surface-muted);border:1px solid var(--border);">
-        <label class="form-label fw-bold mb-2">Subject Grades &amp; Points</label>
-        <div id="grade-rows"></div>
-        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="add-row-btn">
-          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
-          <span>Add Course Grade</span>
-        </button>
+      <!-- Course Grading Section -->
+      <div class="mb-4">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+          <label class="form-label fw-bold mb-0">Courses of Selected Semester</label>
+          <span class="small text-danger fw-semibold" id="mandatory-note">
+            * All courses must have a letter grade assigned before publishing
+          </span>
+        </div>
+
+        <div class="table-responsive rounded border">
+          <table class="table table-hover align-middle mb-0" id="courses-table">
+            <thead style="background:#f1f5f9;">
+              <tr>
+                <th style="width: 15%; padding: 10px 14px;">Course Code</th>
+                <th style="width: 45%; padding: 10px 14px;">Course Title</th>
+                <th style="width: 15%; padding: 10px 14px; text-align: center;">Credit</th>
+                <th style="width: 25%; padding: 10px 14px;">Letter Grade <span class="text-danger">*</span></th>
+              </tr>
+            </thead>
+            <tbody id="courses-tbody">
+              <tr>
+                <td colspan="4" class="text-center text-muted py-4">
+                  Please select a batch and semester above to load all curriculum courses.
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div class="mt-4 d-flex align-items-center gap-3">
-        <button type="submit" class="btn btn-primary">
-          <span>{% if edit_result %}Update Result Record{% else %}Publish Semester Result{% endif %}</span>
+      <div class="mt-4 d-flex align-items-center gap-3 flex-wrap">
+        <button type="submit" class="btn btn-primary px-4 py-2" id="publish-btn" disabled>
+          <span>{% if edit_result %}Update Result &amp; Recalculate CGPA{% else %}Publish Semester Result{% endif %}</span>
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
         </button>
         {% if edit_result %}
-          <a href="/academics/result/post/" class="btn btn-outline-dark btn-sm">Cancel Edit</a>
+          <a href="/academics/result/post/" class="btn btn-outline-secondary btn-sm">Cancel Edit</a>
         {% endif %}
       </div>
     </form>
@@ -83,14 +131,22 @@
   <div class="entry-list">
     {% for r in existing_results %}
       <div class="entry-row">
-        <span class="entry-date">{{ r.student.username }}</span>
-        <span class="entry-time">Sem {{ r.semester }} &middot; GPA <strong>{{ r.gpa }}</strong> &middot; CGPA <strong>{{ r.cgpa }}</strong></span>
-        <span class="entry-course">{{ r.course_grades.all|length }} subject(s) recorded</span>
+        <div class="d-flex flex-column">
+          <span class="entry-date fw-bold text-dark">{{ r.student.first_name|default:r.student.username }}</span>
+          <span class="small text-muted font-monospace">
+            ID: {{ r.student.registration_no|default:r.student.username }}{% if r.student.roll %} &middot; Roll {{ r.student.roll }}{% endif %}
+            {% if r.student.batch %} &middot; Batch {{ r.student.batch.name }}{% endif %}
+          </span>
+        </div>
+        <span class="entry-time">
+          Semester {{ r.semester }} &middot; GPA: <strong class="text-primary">{{ r.gpa }}</strong> &middot; CGPA: <strong class="text-success">{{ r.cgpa }}</strong>
+        </span>
+        <span class="entry-course">{{ r.course_grades.all|length }} subject(s) graded</span>
         <div class="d-flex align-items-center gap-2 justify-content-end">
           <a href="?edit={{ r.id }}" class="icon-btn" title="Edit result">
             <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 013 3L12 15l-4 1 1-4z"/></svg>
           </a>
-          <form method="post" action="{% url 'delete_result' r.id %}" onsubmit="return confirm('Permanently delete this result record?');" class="d-inline m-0">
+          <form method="post" action="{% url 'delete_result' r.id %}" onsubmit="return confirm('Permanently delete this result? Student CGPA will be automatically recalculated.');" class="d-inline m-0">
             {% csrf_token %}
             <button type="submit" class="icon-btn icon-btn-danger" title="Delete result">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
@@ -103,45 +159,228 @@
     {% endfor %}
   </div>
 
+  {{ batch_meta|json_script:"batch-meta-data" }}
+  {{ students_by_batch|json_script:"students-data" }}
   {{ courses_by_semester|json_script:"courses-data" }}
+  {{ grade_scale|json_script:"grade-scale-data" }}
+
   {% if edit_result %}
-    <script id="edit-grades-data" type="application/json">
-      [{% for g in edit_result.course_grades.all %}{"course": {{ g.course_id }}, "grade": "{{ g.grade }}", "grade_point": "{{ g.grade_point }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+    <script id="edit-data" type="application/json">
+      {
+        "studentId": {{ edit_result.student_id }},
+        "batchId": "{{ edit_result.student.batch_id|default:'' }}",
+        "semester": {{ edit_result.semester }},
+        "grades": {
+          {% for g in edit_result.course_grades.all %}
+            "{{ g.course_id }}": "{{ g.grade }}"{% if not forloop.last %},{% endif %}
+          {% endfor %}
+        }
+      }
     </script>
   {% endif %}
 
   <script>
+    const batchMeta = JSON.parse(document.getElementById('batch-meta-data').textContent);
+    const studentsByBatch = JSON.parse(document.getElementById('students-data').textContent);
     const coursesBySemester = JSON.parse(document.getElementById('courses-data').textContent);
-    const semesterSelect = document.getElementById('id_semester');
-    const rowsWrap = document.getElementById('grade-rows');
-    const editGrades = document.getElementById('edit-grades-data')
-      ? JSON.parse(document.getElementById('edit-grades-data').textContent) : [];
+    const gradeScale = JSON.parse(document.getElementById('grade-scale-data').textContent);
 
-    function addRow(prefill) {
-      const sem = semesterSelect.value;
-      const courses = coursesBySemester[sem] || [];
-      const row = document.createElement('div');
-      row.className = 'grade-row';
-      let options = '<option value="">Select course</option>';
-      courses.forEach(c => {
-        const sel = prefill && prefill.course === c.id ? 'selected' : '';
-        options += `<option value="${c.id}" ${sel}>${c.code} - ${c.title}</option>`;
+    const gradePointMap = {};
+    gradeScale.forEach(([grade, point]) => {
+      gradePointMap[grade] = parseFloat(point);
+    });
+
+    const editData = document.getElementById('edit-data')
+      ? JSON.parse(document.getElementById('edit-data').textContent)
+      : null;
+
+    const batchSelect = document.getElementById('id_batch');
+    const studentSelect = document.getElementById('id_student');
+    const semesterSelect = document.getElementById('id_semester');
+    const coursesTbody = document.getElementById('courses-tbody');
+    const liveGpaDisplay = document.getElementById('live-gpa');
+    const liveCreditsDisplay = document.getElementById('live-credits');
+    const liveStatusBadge = document.getElementById('live-status-badge');
+    const publishBtn = document.getElementById('publish-btn');
+
+    // Filter students by selected batch
+    function updateStudents(selectedStudentId) {
+      const batchId = batchSelect.value;
+      studentSelect.innerHTML = '<option value="">-- Choose Student --</option>';
+
+      if (!batchId) {
+        studentSelect.disabled = true;
+        return;
+      }
+
+      const students = studentsByBatch[batchId] || [];
+      if (students.length === 0) {
+        studentSelect.innerHTML = '<option value="">No students in this batch</option>';
+        studentSelect.disabled = true;
+        return;
+      }
+
+      students.forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        const rollPart = s.roll ? `[Roll: ${s.roll}] ` : '';
+        const idPart = s.reg ? s.reg : s.username;
+        opt.textContent = `${rollPart}${s.name} (${idPart})`;
+        if (selectedStudentId && String(selectedStudentId) === String(s.id)) {
+          opt.selected = true;
+        }
+        studentSelect.appendChild(opt);
       });
-      row.innerHTML = `
-        <select name="course" class="form-select form-select-sm" required style="flex:1;">${options}</select>
-        <input type="text" name="grade" class="form-control form-control-sm" placeholder="Grade (e.g. A+)" style="max-width:120px;" required value="${prefill ? prefill.grade : ''}">
-        <input type="number" step="0.01" min="0" max="4" name="grade_point" class="form-control form-control-sm" placeholder="Point" style="max-width:100px;" required value="${prefill ? prefill.grade_point : ''}">
-        <button type="button" class="icon-btn icon-btn-danger" title="Remove row" onclick="this.parentElement.remove()">&times;</button>`;
-      rowsWrap.appendChild(row);
+      studentSelect.disabled = false;
     }
 
-    document.getElementById('add-row-btn').addEventListener('click', () => addRow(null));
-    semesterSelect.addEventListener('change', () => { rowsWrap.innerHTML = ''; addRow(null); });
+    batchSelect.addEventListener('change', function () {
+      updateStudents(null);
+      // Auto-set semester to batch's current_semester if not already manually chosen
+      const meta = batchMeta[this.value];
+      if (meta && meta.current_semester && !editData) {
+        semesterSelect.value = meta.current_semester;
+        renderCourses();
+      }
+    });
 
-    if (editGrades.length) {
-      editGrades.forEach(g => addRow(g));
-    } else {
-      addRow(null);
+    semesterSelect.addEventListener('change', renderCourses);
+
+    function renderCourses() {
+      const sem = semesterSelect.value;
+      coursesTbody.innerHTML = '';
+
+      if (!sem) {
+        coursesTbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center text-muted py-4">
+              Please select a semester above to load its curriculum courses.
+            </td>
+          </tr>`;
+        updateCalculations();
+        return;
+      }
+
+      const courses = coursesBySemester[sem] || [];
+      if (courses.length === 0) {
+        coursesTbody.innerHTML = `
+          <tr>
+            <td colspan="4" class="text-center text-warning py-4">
+              No courses found registered for Semester ${sem}. Please add courses in academics first.
+            </td>
+          </tr>`;
+        updateCalculations();
+        return;
+      }
+
+      courses.forEach(c => {
+        const tr = document.createElement('tr');
+
+        let gradeOptions = '<option value="">-- Select Grade --</option>';
+        gradeScale.forEach(([g, p]) => {
+          const isSelected = editData && editData.grades && editData.grades[c.id] === g ? 'selected' : '';
+          gradeOptions += `<option value="${g}" ${isSelected}>${g} (${p})</option>`;
+        });
+
+        tr.innerHTML = `
+          <td class="font-monospace fw-bold text-dark" style="padding: 10px 14px;">
+            ${c.code}
+            <input type="hidden" name="course" value="${c.id}">
+          </td>
+          <td style="padding: 10px 14px;">${c.title}</td>
+          <td style="padding: 10px 14px; text-align: center;">
+            <span class="badge bg-light text-dark border px-2 py-1">${c.credit.toFixed(1)} cr</span>
+            <input type="hidden" class="course-credit" value="${c.credit}">
+          </td>
+          <td style="padding: 10px 14px;">
+            <div class="d-flex align-items-center gap-2">
+              <select name="grade" class="form-select form-select-sm grade-select" required style="max-width: 170px;">
+                ${gradeOptions}
+              </select>
+              <span class="grade-point-badge text-muted small fw-semibold font-monospace" style="min-width:45px;"></span>
+            </div>
+          </td>
+        `;
+        coursesTbody.appendChild(tr);
+      });
+
+      // Attach event listeners to all grade selects
+      const selects = coursesTbody.querySelectorAll('.grade-select');
+      selects.forEach(sel => {
+        sel.addEventListener('change', updateCalculations);
+      });
+
+      updateCalculations();
+    }
+
+    function updateCalculations() {
+      const rows = coursesTbody.querySelectorAll('tr');
+      const gradeSelects = coursesTbody.querySelectorAll('.grade-select');
+
+      if (gradeSelects.length === 0) {
+        liveGpaDisplay.textContent = '0.00';
+        liveCreditsDisplay.textContent = '0.0';
+        liveStatusBadge.className = 'badge bg-secondary px-3 py-2 fs-6';
+        liveStatusBadge.textContent = 'Select a semester to load courses';
+        publishBtn.disabled = true;
+        return;
+      }
+
+      let totalPoints = 0;
+      let totalCredits = 0;
+      let gradedCount = 0;
+      const totalCourses = gradeSelects.length;
+
+      gradeSelects.forEach(sel => {
+        const tr = sel.closest('tr');
+        const creditInput = tr.querySelector('.course-credit');
+        const pointBadge = tr.querySelector('.grade-point-badge');
+        const credit = parseFloat(creditInput.value) || 0;
+        const val = sel.value;
+
+        if (val && gradePointMap.hasOwnProperty(val)) {
+          const pt = gradePointMap[val];
+          pointBadge.textContent = `(${pt.toFixed(2)})`;
+          pointBadge.className = 'grade-point-badge text-success small fw-bold font-monospace';
+          totalPoints += credit * pt;
+          totalCredits += credit;
+          gradedCount++;
+        } else {
+          pointBadge.textContent = '(--)';
+          pointBadge.className = 'grade-point-badge text-muted small fw-semibold font-monospace';
+          totalCredits += credit;
+        }
+      });
+
+      liveCreditsDisplay.textContent = totalCredits.toFixed(1);
+
+      if (gradedCount === totalCourses && totalCredits > 0) {
+        const gpa = (totalPoints / totalCredits).toFixed(2);
+        liveGpaDisplay.textContent = gpa;
+        liveStatusBadge.className = 'badge bg-success px-3 py-2 fs-6';
+        liveStatusBadge.textContent = `All ${totalCourses} courses graded · Ready to publish`;
+        publishBtn.disabled = false;
+      } else {
+        if (totalCredits > 0 && gradedCount > 0) {
+          const partialGpa = (totalPoints / totalCredits).toFixed(2);
+          liveGpaDisplay.textContent = partialGpa;
+        } else {
+          liveGpaDisplay.textContent = '0.00';
+        }
+        liveStatusBadge.className = 'badge bg-warning text-dark px-3 py-2 fs-6';
+        liveStatusBadge.textContent = `${gradedCount} of ${totalCourses} courses graded (Mandatory)`;
+        publishBtn.disabled = true;
+      }
+    }
+
+    // Initialize edit mode if present
+    if (editData) {
+      if (editData.batchId) {
+        batchSelect.value = editData.batchId;
+      }
+      updateStudents(editData.studentId);
+      semesterSelect.value = editData.semester;
+      renderCourses();
     }
   </script>
 {% endblock %}
