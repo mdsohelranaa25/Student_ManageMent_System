@@ -3,9 +3,8 @@ from django.http import HttpResponse
 from datetime import timedelta
 
 from django.contrib import messages
-from django.contrib.auth import views as auth_views
+from django.contrib.auth import logout, update_session_auth_hash, views as auth_views
 from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.hashers import check_password, make_password
 from django.core.mail import send_mail
@@ -68,6 +67,34 @@ def apply_teacher(request):
 
 class RoleBasedLoginView(auth_views.LoginView):
     template_name = "login.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            # Check if user confirmed logout via query parameter or POST
+            if request.GET.get("confirm_logout") == "1" or (
+                request.method == "POST" and request.POST.get("action") == "confirm_logout"
+            ):
+                logout(request)
+                messages.info(request, "You have been logged out. You can now sign in with another account.")
+                return redirect("login")
+
+            # Determine appropriate dashboard URL
+            role = request.user.role
+            if role == "admin":
+                dashboard_url = "/admin-dashboard/"
+            elif role == "teacher":
+                dashboard_url = "/teacher-dashboard/"
+            else:
+                dashboard_url = "/student-dashboard/"
+
+            # Show confirmation screen asking for permission before logging out
+            context = {
+                "dashboard_url": dashboard_url,
+                "current_user": request.user,
+            }
+            return render(request, "confirm_logout_to_login.html", context)
+
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         role = self.request.user.role

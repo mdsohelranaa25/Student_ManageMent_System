@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Already Signed In · IIT JU Department Portal{% endblock %}
+
+{% block content %}
+  <div class="row justify-content-center my-5">
+    <div class="col-md-7 col-lg-6">
+      <div class="card shadow-sm border-0 rounded-4 overflow-hidden" style="background:#ffffff; border: 1px solid var(--border) !important;">
+        <div class="p-4 p-md-5 text-center">
+          <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width: 72px; height: 72px; background: rgba(180, 83, 9, 0.1); color: #b45309;">
+            <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="8.5" cy="7" r="4"/>
+              <line x1="18" y1="8" x2="23" y2="13"/>
+              <line x1="23" y1="8" x2="18" y2="13"/>
+            </svg>
+          </div>
+
+          <div class="eyebrow text-muted mb-1">Session Active</div>
+          <h2 class="fw-bold mb-2" style="font-size: 1.8rem;">Already Signed In</h2>
+          <p class="text-muted mb-4">
+            You are currently logged in to the portal. To sign in with a different account, you must log out of this account first.
+          </p>
+
+          <div class="p-3 mb-4 rounded-3 text-start d-flex align-items-center gap-3" style="background: var(--surface-muted); border: 1px solid var(--border);">
+            <div class="rounded-circle d-flex align-items-center justify-content-center bg-white border text-primary fw-bold" style="width: 48px; height: 48px; font-size: 1.2rem;">
+              {{ current_user.first_name|default:current_user.username|slice:":1"|upper }}
+            </div>
+            <div class="flex-grow-1 overflow-hidden">
+              <div class="fw-bold text-dark text-truncate">{{ current_user.first_name|default:current_user.username }}</div>
+              <div class="small text-muted font-monospace">
+                ID: {{ current_user.registration_no|default:current_user.username }} &middot;
+                <span class="badge bg-primary text-white" style="font-size: 0.72rem;">{{ current_user.get_role_display }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2">
+            <form method="post" action="{% url 'login' %}" class="w-100 w-sm-auto m-0">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="confirm_logout">
+              <button type="submit" class="btn btn-danger w-100 px-4 py-2 fw-semibold">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                <span>Log Out &amp; Proceed to Login</span>
+              </button>
+            </form>
+
+            <a href="{{ dashboard_url }}" class="btn btn-outline-secondary w-100 w-sm-auto px-4 py-2">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              <span>Stay Signed In (Dashboard)</span>
+            </a>
+          </div>
+
+          <div class="mt-4 pt-2 border-top">
+            <a href="/" class="small text-muted text-decoration-none">&larr; Return to Department Portal Home</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

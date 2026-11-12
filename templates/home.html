@@ -26,10 +26,20 @@
           <div class="hx-meta">Jahangirnagar University</div>
           <p class="hx-lead">A single, secure place for class routines, exam schedules, attendance, notices and results, built for the students, teachers and administration of the department.</p>
           <div class="hx-actions">
-            <a href="/accounts/login/" class="btn-brand">
-              Login to Portal
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-            </a>
+            {% if user.is_authenticated %}
+              <a href="{% if user.role == 'admin' %}/admin-dashboard/{% elif user.role == 'teacher' %}/teacher-dashboard/{% else %}/student-dashboard/{% endif %}" class="btn-brand">
+                <span>Go to Dashboard</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <a href="/accounts/login/" class="btn btn-outline-light ms-2 px-3 py-2" onclick="return confirm('You are currently signed in as {{ user.get_role_display }}. Do you want to log out first to switch accounts?');">
+                <span>Switch / Re-login</span>
+              </a>
+            {% else %}
+              <a href="/accounts/login/" class="btn-brand">
+                <span>Login to Portal</span>
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            {% endif %}
           </div>
         </div>
 
@@ -252,10 +262,20 @@
           <p>Access your class routines, attendance records, semester transcripts, and departmental notices from one centralized gateway.</p>
         </div>
         <div class="portal-access-actions">
-          <a href="/accounts/login/" class="btn-brand">
-            <span>Sign into Portal</span>
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
+          {% if user.is_authenticated %}
+            <a href="{% if user.role == 'admin' %}/admin-dashboard/{% elif user.role == 'teacher' %}/teacher-dashboard/{% else %}/student-dashboard/{% endif %}" class="btn-brand">
+              <span>Go to My Dashboard</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="/accounts/login/" class="btn btn-outline-light ms-2 px-3 py-2" onclick="return confirm('You are currently signed in as {{ user.get_role_display }}. Do you want to log out first to switch accounts?');">
+              <span>Switch Account</span>
+            </a>
+          {% else %}
+            <a href="/accounts/login/" class="btn-brand">
+              <span>Sign into Portal</span>
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          {% endif %}
         </div>
       </div>
     </div>

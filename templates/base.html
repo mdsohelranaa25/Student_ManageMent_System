@@ -48,7 +48,7 @@
 
           <form method="post" action="/accounts/logout/" class="m-0">
             {% csrf_token %}
-            <button type="submit" class="nav-btn" title="Sign out">
+            <button type="submit" class="nav-btn" title="Sign out" onclick="return confirm('Are you sure you want to log out?');">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
               <span>Logout</span>
             </button>

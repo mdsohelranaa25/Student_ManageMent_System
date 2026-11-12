@@ -43,7 +43,7 @@
 
   <div class="text-center mt-5">
     <p class="text-muted small">
-      Already have an approved account? <a href="/accounts/login/" class="fw-bold">Sign in here</a>.
+      Already have an approved account? <a href="/accounts/login/" class="fw-bold" {% if user.is_authenticated %}onclick="return confirm('You are already logged in as {{ user.get_role_display }}. Do you want to log out first to switch accounts?');"{% endif %}>Sign in here</a>.
     </p>
   </div>
 {% endblock %}
