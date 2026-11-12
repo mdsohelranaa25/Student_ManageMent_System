@@ -50,7 +50,7 @@
 
         <div class="mb-3">
           <label class="form-label" for="id_date">Examination Date</label>
-          <input type="date" name="date" id="id_date" class="form-control" required>
+          <input type="date" name="date" id="id_date" class="form-control" required min="{{ today|date:'Y-m-d' }}">
         </div>
 
         <div class="mb-3">
@@ -82,14 +82,24 @@
   <h3 class="mt-5 mb-3">Scheduled Upcoming Examinations</h3>
   <div class="entry-list">
     {% for e in existing %}
-      <div class="entry-row exam-row">
-        <span class="entry-date">{{ e.date|date:"l, d M Y" }}</span>
-        <span class="entry-time">{{ e.time_slot }}</span>
-        <span class="entry-course">{{ e.course.code }} &mdash; {{ e.course.title }} (Semester {{ e.course.semester }})</span>
-        <span class="entry-room">Room {{ e.room }}</span>
+      <div class="entry-row exam-row d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+          <span class="entry-date">{{ e.date|date:"l, d M Y" }}</span>
+          <span class="entry-time">{{ e.time_slot }}</span>
+          <span class="entry-course">{{ e.course.code }} &mdash; {{ e.course.title }} (Semester {{ e.course.semester }})</span>
+          <span class="entry-room">Room {{ e.room }}</span>
+        </div>
+        {% if user.role == "admin" or e.created_by_id == user.id %}
+          <form method="post" action="{% url 'delete_exam_routine' e.id %}" onsubmit="return confirm('Permanently remove this exam schedule?');" class="d-inline m-0">
+            {% csrf_token %}
+            <button type="submit" class="icon-btn icon-btn-danger" title="Delete exam schedule">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/></svg>
+            </button>
+          </form>
+        {% endif %}
       </div>
     {% empty %}
-      <div class="alert alert-info">No examinations have been scheduled yet.</div>
+      <div class="alert alert-info">No upcoming examinations have been scheduled yet.</div>
     {% endfor %}
   </div>
 

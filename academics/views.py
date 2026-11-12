@@ -1,3 +1,4 @@
+from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
 
 from django.contrib import messages
@@ -5,9 +6,20 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.utils import timezone
 
 from accounts.models import User
 from .models import Batch, Course, CourseGrade, ExamRoutine, Room, Routine, SemesterResult, TimeSlot
+
+
+def cleanup_past_exams():
+    """
+    Automatically deletes exam routines whose date has passed (date < today).
+    Exams on today's date remain active until midnight. Once the date passes
+    (on the next date), they are automatically purged from the database.
+    """
+    today = timezone.localdate()
+    ExamRoutine.objects.filter(date__lt=today).delete()
 
 
 # Bangladesh University (UGC) Standard Grading Scale
@@ -118,23 +130,37 @@ def routine_availability(request):
 @login_required
 @user_passes_test(admin_or_teacher)
 def create_exam_routine(request):
+    # Automatically purge past exams whose date has passed
+    cleanup_past_exams()
+    today = timezone.localdate()
+
     if request.method == "POST":
         course = Course.objects.get(id=request.POST["course"])
         if request.user.role == "teacher" and course.teacher_id != request.user.id:
             messages.error(request, "You can only schedule exams for your assigned courses.")
             return redirect("create_exam_routine")
 
-        date = request.POST["date"]
+        date_str = request.POST["date"]
+        try:
+            exam_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+        except (ValueError, TypeError):
+            messages.error(request, "Invalid date format.")
+            return redirect("create_exam_routine")
+
+        if exam_date < today:
+            messages.error(request, "Examination date cannot be in the past.")
+            return redirect("create_exam_routine")
+
         time_slot = TimeSlot.objects.get(id=request.POST["time_slot"])
         room = Room.objects.get(id=request.POST["room"])
 
-        if ExamRoutine.objects.filter(room=room, date=date, time_slot=time_slot).exists():
+        if ExamRoutine.objects.filter(room=room, date=exam_date, time_slot=time_slot).exists():
             messages.error(request, "That room is no longer available for this date/time. Please try again.")
         else:
             ExamRoutine.objects.create(
-                course=course, date=date, time_slot=time_slot, room=room, created_by=request.user,
+                course=course, date=exam_date, time_slot=time_slot, room=room, created_by=request.user,
             )
-            messages.success(request, f"Exam added: {course.code} on {date} at {time_slot}.")
+            messages.success(request, f"Exam added: {course.code} on {exam_date} at {time_slot}.")
         return redirect("create_exam_routine")
 
     batches = Batch.objects.filter(is_running=True).order_by("-name")
@@ -158,14 +184,35 @@ def create_exam_routine(request):
         "batches": batches,
         "courses_by_batch": courses_by_batch,
         "time_slots": TimeSlot.objects.all(),
-        "existing": ExamRoutine.objects.select_related("course", "time_slot", "room").order_by("date", "time_slot__order"),
+        "today": today,
+        "existing": ExamRoutine.objects.filter(date__gte=today).select_related("course", "time_slot", "room").order_by("date", "time_slot__order"),
     }
     return render(request, "create_exam_routine.html", context)
 
 
 @login_required
 @user_passes_test(admin_or_teacher)
+def delete_exam_routine(request, exam_id):
+    if request.method == "POST":
+        if request.user.role == "admin":
+            exam = ExamRoutine.objects.filter(id=exam_id).first()
+        else:
+            exam = ExamRoutine.objects.filter(id=exam_id, created_by=request.user).first()
+
+        if exam:
+            code = exam.course.code
+            dt = exam.date
+            exam.delete()
+            messages.success(request, f"Exam schedule removed for {code} on {dt}.")
+        else:
+            messages.error(request, "Exam schedule not found or you do not have permission to delete it.")
+    return redirect("create_exam_routine")
+
+
+@login_required
+@user_passes_test(admin_or_teacher)
 def exam_room_availability(request):
+    cleanup_past_exams()
     date = request.GET.get("date")
     time_slot_id = request.GET.get("time_slot")
 

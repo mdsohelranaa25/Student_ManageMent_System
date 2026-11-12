@@ -15,6 +15,7 @@ from django.utils import timezone
 from datetime import date as date_today
 
 from academics.models import Announcement, AnnouncementComment, Batch, Course, ExamRoutine, OfficialNotice, Routine, SemesterResult, TimeSlot
+from academics.views import cleanup_past_exams
 from .forms import ApplicationForm, ForgotPasswordForm, ProfilePictureForm, SetNewPasswordForm
 from .models import Application, PasswordResetCode, User
 from .utils import generate_password, generate_reset_code, import_students_from_file, import_users_from_file
@@ -306,6 +307,7 @@ def student_routine(request):
     else:
         semesters = set()
 
+    cleanup_past_exams()
     upcoming_exams = ExamRoutine.objects.filter(
         course__semester__in=semesters, date__gte=date_today.today()
     ).select_related("course", "time_slot", "room").order_by("date", "time_slot__order")
@@ -389,6 +391,7 @@ def teacher_routine(request):
     else:
         semesters = set()
 
+    cleanup_past_exams()
     upcoming_exams = ExamRoutine.objects.filter(
         course__semester__in=semesters, date__gte=date_today.today()
     ).select_related("course", "time_slot", "room").order_by("date", "time_slot__order")
