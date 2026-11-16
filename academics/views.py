@@ -1,6 +1,6 @@
 from datetime import datetime
 from decimal import Decimal, ROUND_HALF_UP
-
+# this is without any reason
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -413,7 +413,7 @@ def post_result(request):
             "incourse_ready": incourse_ready,
             "final_ready": final_ready,
             "is_ready": is_ready,
-        })
+        }) 
 
     is_all_courses_ready = (len(semester_courses) > 0 and ready_courses_count == len(semester_courses))
 
