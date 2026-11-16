@@ -1,0 +1,181 @@
+{% extends "teacher_dashboard_base.html" %}
+{% block title %}Submit Incourse Marks · Faculty Portal · IIT JU{% endblock %}
+
+{% block dash_content %}
+  <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+    <div>
+      <div class="eyebrow">Academic Grading</div>
+      <h1 class="mb-1" style="font-size: 2.2rem;">Incourse Evaluation Management</h1>
+      <p class="text-muted mb-0">Upload and manage continuous assessment and incourse marks for your assigned courses.</p>
+    </div>
+  </div>
+
+  {% if not assigned_courses %}
+    <div class="alert alert-info">
+      You are not currently assigned as an instructor to any academic courses. Please contact the administrator.
+    </div>
+  {% else %}
+    <!-- Filter Bar -->
+    <div class="card p-3 mb-4 border-0 shadow-sm" style="background: #f8fafc; border-radius: 12px;">
+      <form method="get" class="row g-3 align-items-end">
+        <div class="col-md-6">
+          <label class="form-label fw-bold small text-uppercase text-muted">Assigned Course</label>
+          <select name="course" class="form-select" onchange="this.form.submit()">
+            {% for c in assigned_courses %}
+              <option value="{{ c.id }}" {% if selected_course and selected_course.id == c.id %}selected{% endif %}>
+                {{ c.code }} &mdash; {{ c.title }} ({{ c.credit }} Cr &middot; Sem {{ c.semester }})
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-bold small text-uppercase text-muted">Select Target Batch</label>
+          <select name="batch" class="form-select" onchange="this.form.submit()">
+            {% for b in batches %}
+              <option value="{{ b.id }}" {% if selected_batch and selected_batch.id == b.id %}selected{% endif %}>
+                Batch {{ b.name }} {% if b.current_semester %}(Current: Sem {{ b.current_semester }}){% endif %}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-secondary w-100">Filter View</button>
+        </div>
+      </form>
+    </div>
+
+    {% if selected_course and selected_batch %}
+      <!-- Course Info & Action Cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-7">
+          <div class="card p-4 h-100 border shadow-sm" style="border-radius: 12px; border-left: 5px solid var(--accent) !important;">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <span class="badge bg-light text-dark border font-monospace">{{ selected_course.code }}</span>
+              <span class="badge bg-primary text-white text-uppercase">{{ selected_course.course_type }}</span>
+            </div>
+            <h4 class="mb-1 text-dark">{{ selected_course.title }}</h4>
+            <div class="text-muted small mb-3">
+              Semester {{ selected_course.semester }} &middot; {{ selected_course.credit }} Credit Hours &middot; Batch: <strong>{{ selected_batch.name }}</strong>
+            </div>
+            <div class="p-3 rounded-3" style="background:#f1f5f9;">
+              <div class="row text-center g-2">
+                <div class="col-6">
+                  <div class="text-muted small text-uppercase fw-bold">Max Incourse</div>
+                  <div class="fs-4 fw-bold text-primary">{{ selected_course.incourse_max }} Marks</div>
+                </div>
+                <div class="col-6">
+                  <div class="text-muted small text-uppercase fw-bold">Enrolled Students</div>
+                  <div class="fs-4 fw-bold text-dark">{{ student_marks|length }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-5">
+          <div class="card p-4 h-100 border shadow-sm bg-white" style="border-radius: 12px;">
+            <h5 class="mb-2">Excel Tools &amp; Actions</h5>
+            <p class="text-muted small mb-3">Download pre-filled student list or upload completed marks spreadsheet.</p>
+            
+            <div class="d-grid gap-2">
+              <a href="{% url 'download_mark_template' %}?type=incourse&batch={{ selected_batch.id }}&course={{ selected_course.id }}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-center gap-2">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                <span>Download Sample Excel Template</span>
+              </a>
+
+              <!-- Publish Incourse Button -->
+              <form method="post" action="{% url 'publish_incourse_marks' %}" onsubmit="return confirm('Allow students of this batch to view their incourse scores for {{ selected_course.code }}?');">
+                {% csrf_token %}
+                <input type="hidden" name="batch" value="{{ selected_batch.id }}">
+                <input type="hidden" name="course" value="{{ selected_course.id }}">
+                <button type="submit" class="btn btn-outline-success btn-sm w-100 d-flex align-items-center justify-content-center gap-2">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                  <span>Publish Incourse Scores to Students</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Form Section -->
+      <div class="card p-4 mb-4 border shadow-sm" style="border-radius: 12px;">
+        <h5 class="mb-3 d-flex align-items-center gap-2">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="text-primary"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <span>Upload Incourse Marks Spreadsheet (.xlsx / .csv)</span>
+        </h5>
+        
+        <form method="post" action="{% url 'upload_marks' %}" enctype="multipart/form-data" class="row g-3 align-items-center">
+          {% csrf_token %}
+          <input type="hidden" name="mark_type" value="incourse">
+          <input type="hidden" name="batch" value="{{ selected_batch.id }}">
+          <input type="hidden" name="course" value="{{ selected_course.id }}">
+
+          <div class="col-md-8">
+            <input type="file" name="file" class="form-control" accept=".xlsx,.xls,.csv" required>
+            <div class="form-text">
+              Upload the completed Excel sheet. Rows will be automatically matched by <strong>Roll</strong> within Batch {{ selected_batch.name }}.
+            </div>
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100 py-2">
+              <span>Process &amp; Save Incourse Marks</span>
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Marks Roster Table -->
+      <div class="card border shadow-sm overflow-hidden" style="border-radius: 12px;">
+        <div class="card-header bg-light py-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <h5 class="mb-0">Current Student Incourse Marks</h5>
+          <span class="badge bg-secondary">{{ student_marks|length }} Students Enrolled</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th style="width: 10%;">Roll</th>
+                <th style="width: 25%;">Registration No</th>
+                <th style="width: 35%;">Student Name</th>
+                <th style="width: 15%; text-align: center;">Incourse Mark</th>
+                <th style="width: 15%; text-align: center;">Student Visibility</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in student_marks %}
+                <tr>
+                  <td class="font-monospace fw-bold">{{ item.student.roll|default:"&mdash;" }}</td>
+                  <td class="font-monospace">{{ item.student.registration_no|default:item.student.username }}</td>
+                  <td>{{ item.student.first_name|default:item.student.username }}</td>
+                  <td class="text-center font-monospace fw-bold fs-6">
+                    {% if item.mark_obj and item.mark_obj.incourse_marks is not None %}
+                      <span class="badge bg-success-subtle text-success border border-success px-3 py-2">
+                        {{ item.mark_obj.incourse_marks }} / {{ selected_course.incourse_max }}
+                      </span>
+                    {% else %}
+                      <span class="text-muted opacity-50">&mdash; Not set &mdash;</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-center">
+                    {% if item.mark_obj and item.mark_obj.is_incourse_published %}
+                      <span class="badge bg-success">Visible to Student</span>
+                    {% else %}
+                      <span class="badge bg-light text-muted border">Faculty Draft</span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% empty %}
+                <tr>
+                  <td colspan="5" class="text-center text-muted py-4">
+                    No students currently found enrolled in Batch {{ selected_batch.name }}.
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}

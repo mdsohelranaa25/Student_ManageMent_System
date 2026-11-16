@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.urls import include, path
 
 from accounts import views as account_views
+from academics import views as academic_views
 from attendance import views as attendance_views
 
 urlpatterns = [
@@ -24,6 +25,7 @@ urlpatterns = [
     path("teacher-dashboard/", account_views.teacher_dashboard_home, name="teacher_dashboard"),
     path("teacher-dashboard/profile/", account_views.teacher_profile, name="teacher_profile"),
     path("teacher-dashboard/routine/", account_views.teacher_routine, name="teacher_routine"),
+    path("teacher-dashboard/marks/", academic_views.teacher_submit_marks, name="teacher_marks"),
     path("teacher-dashboard/attendance/", attendance_views.take_attendance, name="take_attendance"),
     path("teacher-dashboard/attendance/sheet/", attendance_views.attendance_sheet, name="attendance_sheet"),
     path("teacher-dashboard/attendance/options/", attendance_views.attendance_options, name="attendance_options"),

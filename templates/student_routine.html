@@ -40,12 +40,12 @@
             {% for cell in row.cells %}
               <td>
                 {% for r in cell %}
-                  <div class="routine-cell-entry">
+                  <div class="routine-cell-entry" style="{{ r.course.routine_style }}">
                     {% if view_mode == "combined" %}
-                      <div class="cell-batch">{{ r.batch }}</div>
+                      <div class="cell-batch" style="color: {{ r.course.color_text }}; opacity: 0.85;">{{ r.batch }}</div>
                     {% endif %}
-                    <div class="cell-course">{{ r.course.code }}</div>
-                    <div class="cell-room">Room {{ r.room }}</div>
+                    <div class="cell-course" style="color: {{ r.course.color_text }}; font-weight: 700;">{{ r.course.code }}</div>
+                    <div class="cell-room" style="color: {{ r.course.color_text }}; opacity: 0.9;">Room {{ r.room }}</div>
                   </div>
                 {% empty %}
                   <div class="text-muted small text-center opacity-25">&mdash;</div>

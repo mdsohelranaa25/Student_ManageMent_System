@@ -3,7 +3,7 @@ from django.shortcuts import render
 
 from .models import (
     Announcement, AnnouncementComment, Batch, Course, CourseGrade,
-    ExamRoutine, OfficialNotice, Room, Routine, SemesterResult, TimeSlot,
+    ExamRoutine, OfficialNotice, Room, Routine, SemesterResult, StudentCourseMark, TimeSlot,
 )
 @admin.register(Batch)
 class BatchAdmin(admin.ModelAdmin):
@@ -65,7 +65,14 @@ class SemesterResultAdmin(admin.ModelAdmin):
 
 @admin.register(CourseGrade)
 class CourseGradeAdmin(admin.ModelAdmin):
-    list_display = ("semester_result", "course", "grade", "grade_point")
+    list_display = ("semester_result", "course", "grade", "grade_point", "incourse_marks", "final_marks", "total_marks")
+
+
+@admin.register(StudentCourseMark)
+class StudentCourseMarkAdmin(admin.ModelAdmin):
+    list_display = ("student", "course", "batch", "semester", "incourse_marks", "final_marks", "total_marks", "grade", "grade_point", "is_final_published")
+    list_filter = ("batch", "semester", "is_final_published")
+    search_fields = ("student__username", "student__registration_no", "course__code", "course__title")
 
 @admin.register(OfficialNotice)
 class OfficialNoticeAdmin(admin.ModelAdmin):

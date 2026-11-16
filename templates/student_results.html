@@ -15,6 +15,7 @@
     </div>
   {% endif %}
 
+  <!-- Official Semester Results -->
   <div class="result-list">
     {% for r in results %}
       <div class="result-card">
@@ -33,8 +34,14 @@
           <thead>
             <tr>
               <th>Course Unit</th>
-              <th>Letter Grade</th>
-              <th>Grade Point</th>
+              <th style="text-align: center;">Credit</th>
+              {% if r.course_grades.first.total_marks is not None %}
+                <th style="text-align: center;">Incourse</th>
+                <th style="text-align: center;">Final</th>
+                <th style="text-align: center;">Total</th>
+              {% endif %}
+              <th style="text-align: center;">Letter Grade</th>
+              <th style="text-align: center;">Grade Point</th>
             </tr>
           </thead>
           <tbody>
@@ -43,25 +50,33 @@
                 <td>
                   <span class="fw-bold text-dark font-monospace">{{ g.course.code }}</span> &mdash; {{ g.course.title }}
                 </td>
-                <td>
+                <td class="text-center font-monospace">{{ g.course.credit }}</td>
+                {% if r.course_grades.first.total_marks is not None %}
+                  <td class="text-center font-monospace">{{ g.incourse_marks|default:"&mdash;" }}</td>
+                  <td class="text-center font-monospace">{{ g.final_marks|default:"&mdash;" }}</td>
+                  <td class="text-center font-monospace fw-bold">{{ g.total_marks|default:"&mdash;" }}</td>
+                {% endif %}
+                <td class="text-center">
                   <span class="chip chip-rust fw-bold">{{ g.grade }}</span>
                 </td>
-                <td class="font-monospace fw-bold">
+                <td class="font-monospace fw-bold text-center">
                   {{ g.grade_point }}
                 </td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="3" class="text-muted small">No specific course grades recorded.</td>
+                <td colspan="7" class="text-muted small text-center py-3">No specific course grades recorded.</td>
               </tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     {% empty %}
-      <div class="alert alert-info">
-        No semester results have been officially published for your account yet.
-      </div>
+      {% if not published_incourse %}
+        <div class="alert alert-info">
+          No semester results have been officially published for your account yet.
+        </div>
+      {% endif %}
     {% endfor %}
   </div>
 {% endblock %}

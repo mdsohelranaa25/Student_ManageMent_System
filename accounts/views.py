@@ -508,13 +508,27 @@ def student_delete_comment(request, comment_id):
 @login_required
 @user_passes_test(student_only)
 def student_results(request):
+    from academics.models import StudentCourseMark
     results = (
         SemesterResult.objects.filter(student=request.user)
         .prefetch_related("course_grades__course")
         .order_by("semester")
     )
     latest_cgpa = results.last().cgpa if results else None
-    context = {"active": "results", "results": results, "latest_cgpa": latest_cgpa}
+
+    # Published incourse scores (even if final semester result is still pending)
+    published_incourse = (
+        StudentCourseMark.objects.filter(student=request.user, is_incourse_published=True)
+        .select_related("course")
+        .order_by("course__semester", "course__code")
+    )
+
+    context = {
+        "active": "results",
+        "results": results,
+        "latest_cgpa": latest_cgpa,
+        "published_incourse": published_incourse,
+    }
     return render(request, "student_results.html", context)
 @login_required
 @user_passes_test(admin_only)
